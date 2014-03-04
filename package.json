@@ -1,0 +1,27 @@
+{
+  "name": "intervision",
+  "version": "0.0.1",
+  "description": "embeddable char-based window and event, Borland-inspired lib",
+  "main": "intervision.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/exebook/intervision"
+  },
+  "keywords": [
+    "ui",
+    "window",
+    "event",
+    "console",
+    "borland",
+    "turbo"
+  ],
+  "author": "Yakov Nivin",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/exebook/intervision/issues"
+  },
+  "homepage": "https://github.com/exebook/intervision"
+}
