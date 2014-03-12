@@ -8,23 +8,137 @@ TList.can.init = function() {
 	this.columns = 3
 	this.name = 'TList'
 	this.slideSelMode = -1
+	this.react(0, keycode.UP, this.moveCursor, { arg:'up', role:['move'] })
+	this.react(0, keycode.DOWN, this.moveCursor, { arg:'down', role:['move'] })
+	this.react(0, keycode.LEFT, this.moveCursor, { arg:'left', role:['move'] })
+	this.react(0, keycode.RIGHT, this.moveCursor, { arg:'right', role:['move'] })
+	this.react(0, keycode.HOME, this.moveCursor, { arg:'home', role:['move'] })
+	this.react(0, keycode.END, this.moveCursor, { arg:'end', role:['move'] })
+	this.react(0, keycode.PAGE_UP, this.moveCursor, { arg:'pageup', role:['move'] })
+	this.react(0, keycode.PAGE_DOWN, this.moveCursor, { arg:'pagedown', role:['move'] })
+	this.react(100, keycode['a'], this.userSelect, { arg:'all', role:['select'] })
+	this.react(0, keycode.INSERT, this.userSelect, { arg:'current', role:['select'] })
+	this.react(100, keycode['2'], this.lessColumns, { role:['view'] })
+	this.react(100, keycode['1'], this.moreColumns, { role:['view'] })
+	this.react(1, keycode.RIGHT_SHIFT, this.shiftSel, { arg: 'start'})
+	this.react(1, keycode.LEFT_SHIFT, this.shiftSel, { arg: 'start'})
+	this.react(0, keycode.RIGHT_SHIFT, this.shiftSel, {arg: 'end', down: false})
+	this.react(0, keycode.LEFT_SHIFT, this.shiftSel, {arg: 'end', down: false})
+	this.react(1, keycode.UP, this.shiftSel, { arg:'up', role:['move'] })
+	this.react(1, keycode.DOWN, this.shiftSel, { arg:'down', role:['move'] })
+	this.react(1, keycode.LEFT, this.shiftSel, { arg:'left', role:['move'] })
+	this.react(1, keycode.RIGHT, this.shiftSel, { arg:'right', role:['move'] })
+	this.react(1, keycode.HOME, this.shiftSel, { arg:'home', role:['move'] })
+	this.react(1, keycode.END, this.shiftSel, { arg:'end', role:['move'] })
+	this.react(1, keycode.PAGE_UP, this.shiftSel, { arg:'pageup', role:['move'] })
+	this.react(1, keycode.PAGE_DOWN, this.shiftSel, { arg:'pagedown', role:['move'] })
 }
 
-TList.can.drawItem = function(item, x, y, w, state) {
+TList.can.shiftSel = function(arg) {
+	if (arg == 'start') {
+		var item = this.items[this.sid]
+		if (this.sid == 0 && this.items[this.sid].name == '..') {
+			if (this.items.length <= 1) return false
+			item = this.items[1]
+		}
+		if (item.selected == true) this.shiftSelActive = false; else this.shiftSelActive = true
+		return false
+	}
+	if (arg == 'end') {
+		delete this.shiftSelActive
+		return false
+	}
+	var start = this.sid
+	this.moveCursor(arg)
+	var end = this.sid
+	if (start > end) { var tmp = start; start = end; end = tmp }
+	if (start != end) {
+		var oldOnSelect = this.selChanged
+		while (start <= end) {
+			this.selectItem(start++, this.shiftSelActive)
+		}
+		this.selChanged = oldOnSelect
+		if (this.selChanged != undefined) this.selChanged()
+	}
+	return true
+}
+
+TList.can.moveCursor = function(arg) { with (this) {
+	var old = sid
+	if (arg == 'down') {
+		sid++
+		if (sid > items.length - 1) sid = items.length - 1
+		if (sid >= d + (h * columns)) d++
+	} else if (arg == 'up') {
+		sid--; if (sid < 0) sid = 0
+		if (sid < d) d = sid
+	} else if (arg == 'left') {
+		sid -= h; if (sid < 0) sid = 0
+		if (sid < d) d -= h
+		if (d < 0) d = 0
+	} else if (arg == 'right') {
+		sid += h
+		if (sid > items.length - 1) sid = items.length - 1
+		if (sid >= d + (h * columns)) d += h
+	} else if (arg == 'home') {
+		sid = 0; d = 0;
+	} else if (arg == 'end') {
+		sid = items.length - 1
+		d = sid - (h * columns - 1 - (h >> 1))
+		if (d < 0) d = 0
+	} else if (arg == 'pageup') {
+		sid -= (h * columns - 1); if (sid < 0) sid = 0
+		if (sid < d) d -= (h * columns - 1)
+		if (d < 0) d = 0
+	} else if (arg == 'pagedown') {
+		sid += (h * columns - 1)
+		if (sid > items.length - 1) sid = items.length - 1
+		if (sid >= d + (h * columns)) d += (h * columns - 1)
+	}
+	if (old != sid) { onItem(); return true }
+}}
+
+TList.can.userSelect = function(arg) { with (this) {
+	if (arg == 'all') selectAll()
+	else if (arg == 'current') {
+		var old = sid
+		invertCurrent()
+		sid++
+		if (sid > items.length - 1) sid = items.length - 1
+		if (sid >= d + (h * columns)) d++
+		if (old != sid) onItem()
+		if (this.selChanged != undefined) selChanged()
+	}
+	return true
+}}
+
+TList.can.moreColumns = function() {
+	if (this.columns < this.w / 5) {
+		this.columns++
+		return true
+	}
+}
+
+TList.can.lessColumns = function() {
+	if (this.columns > 1) { this.columns--; return true }
+}
+
+TList.can.drawItem = function(state) {
 //	var F = this.color.get(state), B = F[1]; F = F[0]
 	var F = this.pal[0], B = this.pal[1]
 	if (state.focused) F = this.pal[2], B = this.pal[3]
 	if (state.selected) F = this.pal[4]
 //	if (state.focused && state.selected) F = this.pal[5]
-	var s = item.name
-	if (s.length > w) s = s.substr(0, w)
-	this.rect(x, y, w, 1, ' ', undefined, B)
-	this.print(x, y, s, F, B)
+	var s = state.item.name
+	if (s.length > state.w) s = s.substr(0, state.w)
+	this.rect(state.x, state.y, state.w, 1, ' ', undefined, B)
+	this.print(state.x, state.y, s, F, B)
 	return true
 }
 
-TList.can.draw = function(status, customDraw) {
-	dnaof(this, status) // todo: remove this line
+TList.can.draw = function(state, customDraw) {
+	if (this.w == undefined) return
+	dnaof(this, state) // todo: remove this line
 	if (this.items == undefined) return
 	var y = 0, cy = 0, x = 0, cw = ((this.w - (this.columns-1)) / this.columns), c = 0
 	var i = this.d
@@ -40,77 +154,23 @@ TList.can.draw = function(status, customDraw) {
 		}
 		if (i < this.items.length) {
 			var B = undefined
-			var itemFocused = (i == this.sid && status.focused)
+			var itemFocused = (i == this.sid && state.focused)
 			var itemSelected = (this.items[i].selected != undefined && this.items[i].selected)
 			if (customDraw != undefined) { if (customDraw(this.items[i], Math.floor(x), cy, Math.floor(cw), itemFocused) == true) break }
-			else if (this.drawItem(this.items[i], Math.floor(x), cy, Math.floor(cw), { focused: itemFocused, selected: itemSelected} ) != true) break
+			else if (this.drawItem({
+				item: this.items[i],
+				x: Math.floor(x),
+				y: cy,
+				w: Math.floor(cw),
+				focused: itemFocused,
+				selected: itemSelected
+			}) != true) break
 		}
 		y++, cy++, i++
 	}
 }
 TList.can.onItem = function () {
 }
-TList.can.antiBlink = 0
-TList.can.onChar = function(char) {
-	log('TList.char=', char)
-}
-TList.can.onKey = function(key, down, physical) { with (this) {
-	if (!down) return false
-	var old = sid
-	if (key == 116) { // Down
-		sid++
-		if (sid > items.length - 1) sid = items.length - 1
-		if (sid >= d + (h * columns)) d++
-	} else if (key == 111) { // Up
-		sid--; if (sid < 0) sid = 0
-		if (sid < d) d = sid
-	} else if (key == 113) { // Left
-		sid -= h; if (sid < 0) sid = 0
-		if (sid < d) d -= h
-		if (d < 0) d = 0
-	} else if (key == 114) { // Right
-		sid += h
-		if (sid > items.length - 1) sid = items.length - 1
-		if (sid >= d + (h * columns)) d += h
-	} else if (key == 38 && key_modifiers[0]) { // Control-A
-		this.selectAll()
-		repaint()
-	} else if (key == 118) { // Insert
-		invertCurrent()
-		sid++
-		if (sid > items.length - 1) sid = items.length - 1
-		if (sid >= d + (h * columns)) d++
-		if (this.selChanged != undefined) this.selChanged()
-		repaint()
-	} else if (key == 110) { // Home
-		sid = 0; d = 0;
-		repaint()
-	} else if (key == 115) { // End
-		sid = items.length - 1
-		d = sid - (h * columns - 1 - (h >> 1))
-		if (d < 0) d = 0
-		repaint()
-	} else if (key == 112) { // Page UP
-		sid -= (h * columns - 1); if (sid < 0) sid = 0
-		if (sid < d) d -= (h * columns - 1)
-		if (d < 0) d = 0
-		repaint()
-	} else if (key == 117) { // Page Down
-		sid += (h * columns - 1)
-		if (sid > items.length - 1) sid = items.length - 1
-		if (sid >= d + (h * columns)) d += (h * columns - 1)
-		repaint()
-	} else if (key == 11 && key_modifiers[0]) { // Control-2
-		if (this.columns > 1) this.columns--
-		repaint()
-	} else if (key == 10 && key_modifiers[0]) { // Control-1
-		if (this.columns < this.w / 5) this.columns++
-		repaint()
-	} else return false
-	if (old != sid) onItem()
-	repaint()
-	return true
-}}
 
 TList.can.whoAtXY = function(x, y) {
 	var me = this, found = -1
@@ -160,6 +220,7 @@ TList.can.onCursor = function(x, y) {
 TList.can.selectNone = function() {
 	this.selection = []
 	for (var i = 0; i < this.items.length; i++) delete this.items[i].selected
+	return true
 }
 
 TList.can.selectAll = function() {
@@ -170,6 +231,7 @@ TList.can.selectAll = function() {
 		for (var i = 0; i < this.items.length; i++) this.selection.push(i), this.items[i].selected = true
 	}
 	if (this.selChanged != undefined) this.selChanged()
+	return true
 }
 
 TList.can.selectItem = function(_id, on) { with (this) {

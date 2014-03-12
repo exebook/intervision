@@ -1,3 +1,5 @@
+fs = require('fs')
+
 TKeyCode = kindof(TDialog)
 TKeyCode.can.init = function() {
 	dnaof(this, 40, 1)
@@ -68,65 +70,96 @@ THelp.can.init = function(Desktop) {
 	this.add(this.view, this.w - 10, H)
 	this.addRow()
 	this.size(this.w, this.addY + 3)
+	this.react(0, 9, this.close)
 }
 
-THelp.can.onKey = function(key, down) {
-	if (key == 9) {
-		this.Desktop.hideModal(this)
-		repaint()
-		return
+showHelp = function() {
+	var t = THelp.create(this.getDesktop())
+	this.getDesktop().showModal(t)
+	this.repaint()
+}
+
+TDriveList = kindof(TList)
+TDriveList.can.init = function () {
+	dnaof(this)
+}
+TDriveList.can.drawItem = function(X) {
+	var F = this.pal[0], B = this.pal[1]
+	if (X.focused) F = this.pal[2], B = this.pal[3]
+	if (X.selected) F = this.pal[4]
+	var s = '', t = X.item.title, lights = []
+	for (var i = 0; i < t.length; i++) {
+		if (t[i] == '^') { lights.push(i); continue }
+		s += t[i]
 	}
-	dnaof(this, key, down)
-}
-
-showHelp = function(Desktop) {
-	var t = THelp.create(Desktop)
-	t.Desktop = Desktop
-	Desktop.showModal(t)
+	if (s.length > X.w) s = s.substr(0, X.w)
+	this.rect(X.x, X.y, X.w, 1, ' ', undefined, B)
+	var x = X.x + (X.w >> 1) - (s.length>>1)
+	this.print(x, X.y, s, F, B)
+	for (var i = 0; i < lights.length; i++) this.set(lights[i] + x, X.y, undefined, this.pal[6], this.pal[3])
+	return true
 }
 
 TDriveMenu = kindof(TDialog)
-TDriveMenu.can.init = function() {
+TDriveMenu.can.init = function(panel) {
 	dnaof(this, 40, 1)
+	this.panel = panel
 	this.title = 'Телепорт:'
-	this.addY ++
+	this.list = TDriveList.create()
+	this.list.columns = 1
 	//$.bg = 0xabb, $.frame.fg_focus = 0, $.frame.fg = 0, $.frame.bg = $.frame.bg_focus = 0xabb
 	var list = [
 	//,
 	{ key:49, title:'~ (HOME)', path:'~' }, { key:58, title:'/media', path:'/media' }]
-	if (glxwin.ijs_fileexists(expandPath('~/.deodar/driveMenu.js'))) {
-		list = require(expandPath('~/.deodar/driveMenu.js'))
+	if (fs.existsSync(expandPath('~/.deodar/driveMenu.js'))) {
+		var js = expandPath('~/.deodar/driveMenu.js')
+		list = eval(fs.readFileSync(js).toString())
 	}
 	var me = this
+	var width = 0
 	for (var i = 0; i < list.length; i++) {
-		b = TButton.create(list[i].key, list[i].title, function() {
-			this.close();
-			panel.list.path = expandPath(this.driveItem.path)
-			panel.list.reload()
-			var Deodar = panel.parent
-			Deodar.actor = panel
-			setTimeout(function() { Deodar.input.text = ''; repaint() }, 50) // Ugly hack! Remove it by properly dispatching on_char()
-			return true
-		})
-		b.key = list[i].key; this.add(b, this.w - 10, 1); b.driveItem = list[i];
-		this.addRow()
-		this.addRow()
+		var t = list[i].title
+		if (t.length > width) width = t.length
 	}
-	this.size(this.w, this.addY + 2)
-	this.frame.bottom_title = 'Escape - отмена'
+	width += 2
+	for (var i = 0; i < list.length; i++) {
+		this.list.items.push(list[i])
+		if (typeof list[i].key == 'number') code = list[i].key
+		if (typeof list[i].key == 'string') code = keycode[list[i].key.charAt(0)]
+		this.react(0, code, this.pathSelect, { arg: list[i]})
+	}
+	this.list.pal = this.pal
+	this.add(this.list, width, list.length)
+	this.addRow()
+	this.size(width + this.border * 3 * 2 + 4, this.addY + 2)
+	this.bottom_title = 'Esc-отмена'
+	this.react(0, keycode.ESCAPE, this.close)
+	this.react(0, keycode.ENTER, this.onEnter)
 }
-TDriveMenu.can.onKey = function(key, down, physical) {
-	if (dnaof(this, key, down, physical)) return true
-	if (down && key == 9) {
-		this.close()
-		repaint()
-		return true
+TDriveMenu.can.pathSelect = function (item) {
+	this.close()
+	if (typeof item.onSelect == 'function') item.onSelect.apply(this.panel)
+	var path = item.path
+	var other = this.panel.parent.getOpposite(this.panel)
+	if (other != undefined) {
+		var o = other.list.path
+		if (o.indexOf(path) == 0) {
+			path = o
+		}
+		log(path, o)
 	}
+	this.panel.list.path = expandPath(path)
+	delete this.panel.root
+	if (item.root == true) this.panel.root = item
+	this.panel.list.reload()
+}
+TDriveMenu.can.onEnter = function() {
+	this.pathSelect(this.list.items[this.list.sid])
 }
 
 showDriveMenu = function(Desktop, panel) {
-	var menu = TDriveMenu.create()
-	Desktop.showModal(menu, panel.x + 1, 3)
+	var menu = TDriveMenu.create(panel)
+	Desktop.showModal(menu, panel.x + (panel.w >> 1) - (menu.w >> 1), 3)
 }
 
 

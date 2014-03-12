@@ -1,40 +1,34 @@
-TObject = kindof()
-TObject.can.init = function() {
-	this.name = 'TObject'
-}
-
-var objectID = 0
-
-TColor = kindof(TObject)
-
-TColor.can.init = function(origin) {
-	dnaof(this)
-	for (var i in origin) this[i] = origin[i]
-}
 
 nortonPalette = {
 	view: [0xaa0, 0x700],
 	window: [0xaa0, 0x700, 0xff0, 0xa44],
-	dialog: [0x555, 0xbcd, 0xff0, 0xa44, 0x555, 0],//	$.bg = , $.frame.fg = 0x555, $.frame.fg_focus = 0,
-
+	dialog: [0x555, 0xbcd, 0x444, 0x9ab, 0x555, 0, 0xefe],//	$.bg = , $.frame.fg = 0x555, $.frame.fg_focus = 0,
 	list: [0xaa0, 0x700, 0x700, 0x880, 0x0ff],//0xff0, 0x880, 0xfff],//, 0x00f, 0xafa, 0x88f],
-	filelist: [0x700, 0xff0, 0x880, 0xfff, 0x00f, 0xafa, 0x88f],
-	label: [0, 0xeee],
+//	filelist: [0x700, 0xff0, 0x880, 0xfff, 0x00f, 0xafa, 0x88f],
+	filelist: [0xff0, 0x700, 0xfff, 0xff,
+		0, 0, 0x880, 0, 0],
+	label: [0, 0xe0e, 0xf00, 0x0f0],
 	button: [0, 0x888],
-	edit: [0x990, 0x500, 0xff0]
+	edit: [0x990, 0x500, 0xff0],
+	console: [0x6a6, 0x021]
 }
 
 getColor = nortonPalette
 
 //colorDialog.init({ fore: 0x000, back: 0x89a, focusFore: 0xff0, labelFore: 0x444, inputBack:0x990, focusBack: 0x700, selFore: 0xff0, selBack: 0x700, disabled: 0xa44 })
 
-TView = kindof(TColor)
+TView = kindof(TKeyInput)
 
 TView.can.init = function() {
 	dnaof(this)
-	this.id = objectID++
 	this.name = 'TView'
 	this.pal = getColor.view
+}
+TView.can.getDesktop = function() {
+	return this.parent.getDesktop()
+}
+TView.can.repaint = function() {
+	this.parent.repaint()
 }
 TView.can.size = function(w, h) {
 	this.w = w, this.h = h, this.data = []

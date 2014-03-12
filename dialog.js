@@ -38,7 +38,7 @@ TLabel.can.init = function(title) {
 	this.disabled = true
 	this.name = 'TLabel'
 	this.title = title
-	this.pal = getColor.label
+	this.pal = getColor.dialog
 }
 TLabel.can.draw = function() {
 	this.clear(this.pal[0], this.pal[1])
@@ -50,11 +50,11 @@ TLabel.can.draw = function() {
 	}
 }
 
-//TInput = kindof(TEdit)
-//TInput.init = function(text) {
-//	dnaof(this)
-//	this.text = text
-//}
+TInput = kindof(TEdit)
+TInput.init = function(text) {
+	dnaof(this)
+	this.text = text
+}
 
 TDialog = kindof(TWindow)
 
@@ -77,20 +77,22 @@ TDialog.can.add = function(item, W, H) {
 	this.addX += W + 2
 	if (H > this.addLineH) this.addLineH = H
 }
-TDialog.can.onKey = function(key, down, physical) {
-	if (down) for (var i = 0; i < this.buttons.length; i++) {
-		if (this.buttons[i].key == key) {
+TDialog.can.onKey = function(K) {
+	if (K.down) for (var i = 0; i < this.buttons.length; i++) {
+		if (this.buttons[i].key == K.key) {
 			this.buttons[i].onClick()
-			repaint()
-			return
+			this.repaint()
+			return true
 		}
 	}
-	dnaof(this, key, down, physical)
+	return dnaof(this, K)
 }
 TDialog.can.close = function() {
 	//assume that parent is TDesktop
 	this.parent.hideModal()
 	this.parent.remove(this)
+	this.parent.repaint()
+	return true
 }
 
 TOkCancel = kindof(TDialog)

@@ -1,8 +1,6 @@
 TWindow = kindof(TGroup)
 TWindow.can.init = function() {
 	dnaof(this)
-	this.colorTitle = TColor.create()
-	this.colorTitle.init(this.color)
 	this.border = 0
 	this.name = 'TWindow'
 	this.pal = getColor.window
@@ -31,7 +29,7 @@ TWindow.can.draw = function(state) {
 TWindow.can.drawFrame = function(state, x, y, w, h) {
 //	var F = this.color.get(state), B = F[1]; F = F[0]
 	var F = this.pal[0], B = this.pal[1]
-	if (state.focused) F = this.pal[2]
+	if (state.active) F = this.pal[2]
 	if (state.disabled) F = this.pal[3]//(F & 0xfff) | 0x8000
 //	if (state.focused && this.actor == undefined) F = 0xfff;//(F & 0xfff) | 0x8000
 	this.set(x, y, '╔', F, B)
@@ -47,14 +45,14 @@ TWindow.can.drawFrame = function(state, x, y, w, h) {
 		if (typeof this.title == 'string') title = this.title
 		if (typeof this.title == 'function') title = this.title.apply(this)
 		if (title.length > this.w) title = title.substr(title.length - this.w, this.w)
-		if (state.focused) { F = this.colorTitle.back, B = this.colorTitle.fore }
+		if (state.active) { F = this.pal[2], B = this.pal[3] }
 		this.print((this.w >> 1) - (title.length + 2 >> 1), y, ' '+title+' ', F, B)
 	}
 	if (this.bottom_title != undefined) {
 		var title = ''
 		if (typeof this.bottom_title == 'string') title = this.bottom_title
 		if (typeof this.bottom_title == 'function') title = this.bottom_title()
-		this.print((this.w >> 1) - (title.length + 2 >> 1), this.h-1, ' '+title+' ', F, B)
+		this.print((this.w >> 1) - (title.length + 2 >> 1), this.h-1 - (1 * this.border), ' '+title+' ', this.pal[0], this.pal[1])
 	}
 }
 

@@ -1,4 +1,4 @@
-
+// 
 ALIAS = [{pattern: /^ls\b/, replace: 'ls --color '}]
 s = 'ls /'
 alias = function(t) {
@@ -8,9 +8,9 @@ alias = function(t) {
 	return t
 }
 
-HOME = glxwin.native_sh("env|grep ^HOME").split('\n')[0].split('=')[1]
+HOME = process.env.HOME//glxwin.native_sh("env|grep ^HOME").split('\n')[0].split('=')[1]
 
-function curdir() { return native_sh('pwd').split('\n')[0] }
+function curdir() { return process.cwd() }//return glxwin.native_sh('pwd').split('\n')[0] }
 
 expandPath = function(s) {
 	if (s == '.') return curdir()
@@ -53,12 +53,19 @@ wrapLines = function(L, w) {
 	return R
 }
 
+numDeclension = function(sklon, rod, num, word) {
+	//1 файл 2 3 4 файла 5 6 7 8 9 10 файлов 21 файл
+	//1 файле 2 3 4 5 файлах 21 файле
+	if ((num % 10) == 1) return 'файле'
+	return 'файлах'
+}
+
 dump = function(x, level) {
 	if (level == undefined) level = ''
 	var aname = '*'; if (x.parent != undefined) aname = x.parent.name
 	var actor = ''; if (x.parent != undefined) if (x.parent.actor == x) actor = 'actor'
 	log(level, x.name, x.x, x.y, x.w, x.h, x.visible()?'visible':'hidden', actor)
-	if (x.items == undefined || x.name == 'TList'); else {
+	if (x.items == undefined || x.name.indexOf('List') >= 0); else {
 		if (x.items.length > 0) {
 			log(level, '[')
 			for (var i = 0; i < x.items.length; i++) {
@@ -66,5 +73,18 @@ dump = function(x, level) {
 			}
 			log(level, ']')
 		}
+	}
+}
+
+backtrace = function() {
+	try { i.dont.exist += 0 } catch (e) {
+		var S = e.stack.split('\n')
+		//process.stdout.write(e.stack + '\n')
+		log('--- backtrace ---')
+		for (var i = 2; i < S.length; i++) {
+			if (S[i].indexOf('deodar') < 0) continue
+			log(S[i])
+		}
+		log('---    end   ---')
 	}
 }

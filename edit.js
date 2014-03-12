@@ -6,6 +6,8 @@ TEdit.can.init = function() {
 	this.multiline = false
 	this.caretChar = '║'
 	this.pal = getColor.edit
+	this.react(0, keycode.BACK_SPACE, this.editBack)
+	this.react(100, keycode.BACK_SPACE, this.editBackWord)
 }
 TEdit.can.draw = function(state) {
 	dnaof(this, state)
@@ -15,28 +17,30 @@ TEdit.can.draw = function(state) {
 	this.print(0, 0, this.text, F, this.pal[1])
 	//this.print(this.text.length, 0,  '║', this.fg, this.bg)
 }
-TEdit.can.onKey = function(key, down) {
-	if (!down) return false
-	if (key == 22) { // Backspace
-		if (key_modifiers[0]) { // Control-Back
-			var s = this.text.split(' ')
-			s.pop()
-			this.text = s.join(' ')
-			repaint()
-		} else { // Back
-			var i = this.text.length
-			this.text = this.text.substr(0, this.text.length - 1)
-			if (this.text.length != i) repaint()
-		}
-		if (TODO) display.caretReset()
-		return true
-	}
+TEdit.can.editBack = function() {
+	var i = this.text.length
+	this.text = this.text.substr(0, this.text.length - 1)
+//	if (this.text.length != i) repaint()
+	this.getDesktop().display.caretReset()
+	return true
 }
-TEdit.can.onChar = function(ch) {
-	if (key_modifiers[0]) return
-	this.text += ch
-	if (TODO) display.caretReset()
-	repaint()
+TEdit.can.editBackWord = function() {
+	var s = this.text.split(' ')
+	s.pop()
+	this.text = s.join(' ')
+	this.getDesktop().display.caretReset()
+	return true
+}
+TEdit.can.onKey = function(k) {
+	var R = dnaof(this, k)
+	if (!R && k.char != undefined) {
+		if (k.plain == true) {
+			this.text += k.char
+			this.getDesktop().display.caretReset()
+			return true
+		}
+	}
+	return R
 }
 
 TLabeledEdit = kindof(TEdit)
@@ -62,9 +66,15 @@ TTextView = kindof(TView)
 TTextView.can.init = function() {
 	dnaof(this)
 	this.lines = []
-	for (var i = 0; i < 40; i++) this.lines.push('* * * * * * ' + i + ' * * * * * *')
+	for (var i = 0; i < 40; i++) this.lines.push('')//'* * * * * * ' + i + ' * * * * * *')
 	this.name = 'TTextView'
 	this.d = 0
+	this.react(0, keycode.UP, this.moveCursor, {arg:'up'})
+	this.react(0, keycode.DOWN, this.moveCursor, {arg:'down'})
+	this.react(0, keycode.HOME, this.moveCursor, {arg:'home'})
+	this.react(0, keycode.END, this.moveCursor, {arg:'end'})
+	this.react(0, keycode.PAGE_UP, this.moveCursor, {arg:'pageup'})
+	this.react(0, keycode.PAGE_DOWN, this.moveCursor, {arg:'pagedown'})
 }
 
 TTextView.can.draw = function() {
@@ -77,32 +87,26 @@ TTextView.can.draw = function() {
 	}
 }
 
-TTextView.can.onKey = function(key, down) { with (this) {
-	if (!down) return false
-	if (key == 111) {
+TTextView.can.moveCursor = function(arg) { with (this) {
+	if (arg == 'up') {
 		this.d--
 		if (this.d < 0) this.d = 0
-		repaint()
-	} else if (key == 116) {
+	} else if (arg == 'down') {
 		this.d++
 		if (this.d > this.lines.length - this.h)  this.scrollToBottom()
-		repaint()
-	} else if (key == 110) { // Home
+	} else if (arg == 'home') {
 		d = 0;
-		repaint()
-	} else if (key == 115) { // End
+	} else if (arg == 'end') {
 		d = lines.length - h + 1
 		if (d < 0) d = 0
-		repaint()
-	} else if (key == 112) { // Page UP
+	} else if (arg == 'pageup') {
 		d -= h - 1
 		if (d < 0) d = 0
-		repaint()
-	} else if (key == 117) { // Page Down
+	} else if (arg == 'pagedown') {
 		d += h - 1
 		if (d > lines.length - h + 1) d = lines.length - h + 1
-		repaint()
 	}
+	return true
 }}
 TTextView.can.scrollToBottom = function() {
 	this.d = this.lines.length - this.h

@@ -1,4 +1,10 @@
 intervision
 ===========
 
-embeddable char-based window and event, Borland-inspired lib
+Embeddable text UI kit, inspired by TurboVision
+
+
+status
+===========
+
+Being actively developed to be a part of Deodar

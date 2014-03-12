@@ -1,23 +1,27 @@
+var fs = require('fs')
 fonts = [
-{ name: '/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf', extra_x: 0, tune_y: 0 },
-{ name: '/usr/share/fonts/truetype/msttcorefonts/Andale_Mono.ttf', extra_x: 0, tune_y: -1 },
+//{ name: '/usr/share/fonts/truetype/droid/DroidSansMono.ttf', extra_x: 0, tune_y: 0 },
+//{ name: '/usr/share/fonts/truetype/tlwg/TlwgMono.ttf', extra_x: 0, tune_y: 0 },
 { name: '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono.ttf', extra_x: 0, tune_y: 0 },
-{ name: '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono-Oblique.ttf', extra_x: 0, tune_y: 0 },
+{ name: '/usr/share/fonts/truetype/tlwg/TlwgTypewriter.ttf'},
+{ name: '/usr/share/fonts/truetype/freefont/FreeMono.ttf', extra_x: 0, tune_y: -1 },
+//{ name: '', extra_x: 0, tune_y: 0 },
+{ name: '/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf', extra_x: 0, tune_y: -1 },
+{ name: '/usr/share/fonts/truetype/msttcorefonts/Andale_Mono.ttf', extra_x: 0, tune_y: -1 },
+{ name: '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono-Oblique.ttf', extra_x: 0, tune_y: -1 },
 { name: '/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf',  extra_x: 0, tune_y: -1 },
+{ name: '/usr/share/fonts/truetype/ttf-liberation/LiberationMono-Regular.ttf', extra_x: 0, tune_y: -1 },
 { name: '/y/yaui/glx/f/consola.ttf', extra_x: -1, tune_y: 0 },
 { name: '/y/yaui/glx/f/fixed7.ttf', extra_x: 0, tune_y: 0 },
 ]
-
+var fontSize = 22
 function selectFirstAvailableFont() {
-	for (var i = 0; i < fonts.length; i++) if (glxwin.ijs_fileexists(fonts[i].name)) return i
+	for (var i = 0; i < fonts.length; i++) if (fs.existsSync(fonts[i].name)) return i
 	return -1
 }
 
-var PanelWidth = 45, PanelHeight = 32
 var f = selectFirstAvailableFont()
-if (f < 0); f = 4
-//var W = native_create_win(undefined, fonts[f].name, 18, fonts[f].extra_x, fonts[f].tune_y)
-
+f = 0
 
 function renderView(win, view, atx, aty) {
 	var TEXT = [], COLOR = []
@@ -51,70 +55,147 @@ function renderView(win, view, atx, aty) {
 
 TGLXVision = kindof(TGLXWin)
 
-TGLXVision.can.init = function(x, y, w, h) {
-	dnaof(this, undefined, fonts[f].name, 18, fonts[f].extra_x, fonts[f].tune_y)
+TGLXVision.can.init = function(desktopKind, W, H) {
+	dnaof(this, undefined, fonts[f].name, fontSize, fonts[f].extra_x, fonts[f].tune_y)
 	this.fnt = this.applyFont()// not implemented at all yet..'./fixed7.ttf', 11, 0, 0xffffff)
-	this.desktop = TDesktop.create()
-	this.desktop.init()
+	this.desktop = desktopKind.create(W, H)
 	this.desktop.pos(0, 0)
-	this.desktop.size(Math.floor(w / this.fnt[0]), Math.floor(h / this.fnt[1]))
+	this.desktop.size(W, H)
+	this.desktop.display = this
+	var me = this
+	this.desktop.repaint = function() { me.repaint() }
 	this.caretFlash = false
 	this.caretVertical = false
 	this.name = 'TGLXVision'
 	this.caretReset()
-	this.setXYWH(x, y, w, h)
+	this.setXYWH(undefined, undefined, W * this.fnt[0], H * this.fnt[1])
+}
+
+TGLXVision.can.caretDraw= function() {
+	if (this.desktop.caret != undefined && this.caretDisabled != true) {
+		this.paintBegin()
+		var x = this.desktop.caret.x, y = this.desktop.caret.y
+		var ch = 32, clr = 0xfff
+		var o = this.desktop.get(x, y)
+		if (o != undefined) {
+			if (o.ch != undefined) ch = o.ch.charCodeAt(0)
+			if (o.fg != undefined) clr = o.fg & 0xffff
+			if (o.bg != undefined) clr = clr | (o.bg & 0xffff) << 16
+		}
+		var TEXT = [[]], COLOR = [[]]
+		TEXT[0][0] = ch, COLOR[0][0] = clr
+		x = this.fnt[0] * x, y = this.fnt[1] * y
+		this.colorText(x, y, 1, 1, TEXT, COLOR)
+		if (this.caretFlash == true) 
+			if (this.caretVertical == true)
+				this.crect(x,  y, x + 3, y + this.fnt[1], 0xffffffff)
+			else
+				this.crect(x,  y + this.fnt[1] - 3, x + this.fnt[0], y + this.fnt[1], 0xffffffff)
+		this.paintEnd()
+	}
 }
 
 TGLXVision.can.caretReset = function() {
-//	if (this.caretInterval != undefined) clearInterval(this.caretInterval)
-//	this.caretInterval = setInterval(function() { this.caretFlash = !this.caretFlash; if (Desktop.caret != undefined) repaint() }, 450)
-//	this.caretFlash = true
-//	repaint()
+	if (this.caretInterval != undefined) clearInterval(this.caretInterval)
+	var me = this
+	this.caretInterval = setInterval(function() {
+		me.caretFlash = !me.caretFlash
+		me.caretDraw()
+	}, 450)
+	this.caretFlash = true
+	me.caretDraw()
+}
+
+TGLXVision.can.onSizeDo = function() {
+	var w = this.resizeLast.w, h = this.resizeLast.h
+	var W = Math.floor(w / this.fnt[0]), H = Math.floor(h / this.fnt[1])
+	if (this.desktop.w != W || this.desktop.h != H) {
+		this.desktop.size(W, H)
+		this.desktop.onSize(W, H)
+		this.repaint()
+	}
 }
 
 TGLXVision.can.onSize = function(w, h) {
-	var W = Math.floor(w / this.fnt[0]), H = Math.floor(h / this.fnt[1])
-	if (this.desktop.w != W || this.desktop.h != H) this.desktop.size(W, H)
-	if (W * this.fnt[0] != w || H * this.fnt[1] != h) {
-		var A = this.getXYWH()
-		if (this.sizeTimer != undefined) clearTimeout(this.sizeTimer)
-		var me = this
-		this.sizeTimer = setTimeout(function() {
-			me.setXYWH(undefined, undefined, W * me.fnt[0], H * me.fnt[1])
-			delete me.sizeTimer
-		}, 200)
+	if (this.ignoreResize == true) {
+		this.ignoreResize = false
+		return
 	}
+	var me = this
+	this.resizeLast = {w:w, h:h}
+	if (this.resizer == undefined) this.resizer = setInterval(function() {
+		me.onSizeDo()
+	}, 500)
+	if (this. stopResize != undefined) clearTimeout(this.stopResize)
+	this. stopResize = setTimeout(function(){
+		this. stopResize  = undefined
+		clearInterval(this.resizer)
+		this.resizer = undefined
+		var W = me.desktop.w * me.fnt[0], H = me.desktop.h * me.fnt[1]
+		me.ignoreResize = true
+		me.setXYWH(undefined, undefined, W, H)
+	}, 1000)
 }
+
 TGLXVision.can.onPaint = function() {
-	this.desktop.draw({focused:true})
-	renderView(this, this.desktop, 0, 0)
-
-	var A = this.getXYWH(),
-		x = this.desktop.w * this.fnt[0],
-		y = this.desktop.h * this.fnt[1],
-		w = A[2] - 0,
-		h = A[3] - 0
-	this.crect(x, 0, w, h, 0xff000000)
-	this.crect(0, y, x, h, 0xff000000)
-}
-key_modifiers = [false,false,false,false,false,false,false,false,false] //0-control 3-alt 6-shift
-
-function key_check(key, down) {
-	if (key == 37) key_modifiers[1] = down
-	if (key == 105) key_modifiers[2] = down
-	if (key == 64) key_modifiers[4] = down
-	if (key == 108) key_modifiers[5] = down
-	if (key == 50) key_modifiers[7] = down
-	if (key == 62) key_modifiers[8] = down
-	key_modifiers[0] = key_modifiers[1] || key_modifiers[2] // CONTROL
-	key_modifiers[3] = key_modifiers[4] || key_modifiers[5] // ALT
-	key_modifiers[6] = key_modifiers[7] || key_modifiers[8] // SHIFT
-//	log('key_modifiers=', key_modifiers)
+	if (this.caretOnly == true) return
+	try { // TODO: make all C++ win::callbacks automagic with error and backtrace
+		this.desktop.draw({ active:true, focused: true })
+		renderView(this, this.desktop, 0, 0)
+		var A = this.getXYWH(),
+			x = this.desktop.w * this.fnt[0],
+			y = this.desktop.h * this.fnt[1],
+			w = A[2] - 0,
+			h = A[3] - 0
+		this.crect(x, 0, w, h, 0xff000000)
+		this.crect(0, y, x, h, 0xff000000)
+	} catch (e) {
+		backtrace()
+	}
+	this.caretDraw()
 }
 
-TGLXVision.can.onKey = function(key, down, physical) {
-	key_check(key, false)
-	this.desktop.onKey(key, down, physical)
+keycode = {
+	F1: 67, F2:68, F3:69, F4:70, F5:71, F6: 72, F7: 73, F8:74, F9: 75, F10: 76,
+	ESCAPE: 9, ENTER: 36, TAB: 23, F11: 95, F12: 96,
+	BACK_SPACE: 22, PRINT_SCREEN: 107, PAUSE_BREAK: 127, SPACE: 65,
+	INSERT: 118, DELETE: 119, HOME: 110, END: 115, PAGE_UP: 112, PAGE_DOWN: 117, POPUP_MENU: 135,
+	LEFT_SHIFT: 50, LEFT_CONTROL: 37, LEFT_ALT: 64,
+	RIGHT_ALT: 108, RIGHT_CONTROL: 105, RIGHT_SHIFT: 62,
+	UP:111, DOWN: 116, LEFT: 113, RIGHT: 114, CAPS_LOCK: 66,
+	'1':10, '2':11, '3':12, '4':13, '5':14, '6':15, '7':16, '8': 17, '9': 18, '0':19, '-':20, '=':21,
+	'q':24,'w':25,'e':26,'r':27,'t':28,'y':29,'u':30,'i':31,'o':32,'p':33,'[':34,']':35,
+	'a':38,'s':39,'d':40,'f':41,'g':42,'h':43,'j':44,'k':45,'l':46,';':47,"'":48,'`':49,
+	'\\': 51,'z':52,'x':53,'c':54,'v':55,'b':56,'n':57,'m':58,',':59,'.':60,'/':61,
+}
+findKeyCode = function(C) {
+	for (var i in keycode) if (keycode[i] == C) return i
+}
+
+keyModifiers = [false,false,false,false,false,false,false,false,false]
+
+function keyCheck(key, down) { with(keycode) {
+	if (key == LEFT_CONTROL) keyModifiers[1] = down
+	if (key == RIGHT_CONTROL) keyModifiers[2] = down
+	if (key == LEFT_ALT) keyModifiers[4] = down
+	if (key == RIGHT_ALT) keyModifiers[5] = down
+	if (key == LEFT_SHIFT) keyModifiers[7] = down
+	if (key == RIGHT_SHIFT) keyModifiers[8] = down
+	keyModifiers[0] = keyModifiers[1] || keyModifiers[2] // CONTROL
+	keyModifiers[3] = keyModifiers[4] || keyModifiers[5] // ALT
+	keyModifiers[6] = keyModifiers[7] || keyModifiers[8] // SHIFT
+}}
+
+TGLXVision.can.onKey = function(down, char, key, physical) {
+	keyCheck(key, down)
+	var k = keyModifiers
+	var mod = {
+		control: k[0], alt: k[3], shift: k[6],
+		left: { control: k[1], alt: k[4], shift: k[7] },
+		right: { control: k[2], alt: k[5], shift: k[8] },
+	}
+	var state = { key:key, char:char, down:down, physical:physical, mod:mod, plain: !(k[0] || k[3] || k[6]) }
+	if (this.desktop.onKey(state)) this.repaint()
 }
 
 button_state = []
@@ -124,40 +205,35 @@ TGLXVision.can.onMouse = function(button, down, x, y) {
 	x = Math.floor(x / this.fnt[0])
 	y = Math.floor(y / this.fnt[1])
 	if (this.desktop.onMouse(button, down, x, y)) this.repaint()
-	//if () repaint
 }
 
-
-cursor_pos_cache = {x:-1, y:-1}
+cursor_pos_cache = { x:-1, y:-1 }
 
 TGLXVision.can.onCursor = function (x, y) {
 	x = Math.floor(x / this.fnt[0])
 	y = Math.floor(y / this.fnt[1])
 	if (x != cursor_pos_cache.x || y != cursor_pos_cache.y) {
 		cursor_pos_cache = {x:x, y:y}
-		if (this.desktop.onCursor(x, y)) repaint()
+		if (this.desktop.onCursor(x, y)) this.repaint()
 	}
 	return
 }
 
-TGLXVision.can.onChar = function (ch) {
-	this.desktop.onChar(ch)
+TGLXVision.can.onFocus = function (on) {
+	this.caretDisabled = !on
+	this.caretReset()
+	for (var i = 0; i < keyModifiers.length; i++) keyModifiers[i] = false
+	return true
 }
 
-
 repaint = function() {
-	glxwin.mainWindow.repaint()
+	log('oops: global repaint() deprecated')
+	try { i.dont.exist += 0 } catch (e) {
+		var S = e.stack.split('\n')
+		//process.stdout.write(e.stack + '\n')
+		log(S[2])
+		log(S[3])
+	}
 }
 
 //this.win.onCursor = function(x, y) { X = x, Y = y; this.repaint() }
-
-
-/*
-
-
-yaui_on_focus = function(handle, on) {
-	display.caretDisabled = !on
-	for (var i = 0; i < key_modifiers.length; i++) key_modifiers[i] = false
-}
-
-*/
