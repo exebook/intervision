@@ -19,7 +19,7 @@ TGroup.can.remove = function(item) {
 
 TGroup.can.draw = function(state) {
 	delete this.caret
-//	this.clear(this.color.fore, this.color.back)
+//	this.clear(' ', this.color.fore, this.color.back)
 	for (var i = 0; i < this.items.length; i++)
 		if (this.items[i].visible())
 			this.items[i].draw({ 
@@ -111,6 +111,7 @@ TDesktop.can.showModal = function(d, x, y, w, h) {
 	this.actors.push(this.actor)
 	this.add(d)
 	this.modal = d
+	d.repaint()
 }
 TDesktop.can.hideModal = function() {
 	this.remove(this.modal)

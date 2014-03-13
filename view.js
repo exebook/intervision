@@ -10,8 +10,21 @@ nortonPalette = {
 	label: [0, 0xe0e, 0xf00, 0x0f0],
 	button: [0, 0x888],
 	edit: [0x990, 0x500, 0xff0],
+	syntax: [0xff0, 0x990, 0x400, 0xaa0, 
+		0x0, // space
+		0xdd0, // sym
+		0x0f8, // num
+		0x00e, //str
+		0x433, // id
+		0x0ff, //key 0 function
+		0x0af, // key 1 dnaof
+		0x0, // key 2 console
+		0xf00, // key 3 TView
+		0xa03,  // false this
+		],
 	console: [0x6a6, 0x021]
 }
+//	var cnorm = 0, csym = 1, cnum = 2, cstr = 3, cid = 4, ckey = 5
 
 getColor = nortonPalette
 
@@ -76,16 +89,23 @@ TView.can.rect = function(X, Y, w, h, ch, fg, bg) {
 		}
 	}
 }
-TView.can.clear = function(fg, bg) {
+TView.can.clear = function(ch, fg, bg) {
+	if (ch == undefined) ch = ' '
 	if (fg == undefined) fg = this.pal[0]
 	if (bg == undefined) bg = this.pal[1]
-	this.rect(0, 0, this.w, this.h, ' ', fg, bg)
+	this.rect(0, 0, this.w, this.h, ch, fg, bg)
 }
 TView.can.draw = function(state) {
-	this.clear(this.pal[0], this.pal[1])
+	this.clear(' ', this.pal[0], this.pal[1])
 }
 
 TView.can.visible = function() {
 	return (this.hidden == undefined || this.hidden == false)
 }
 
+TView.can.close = function() {
+	this.getDesktop().hideModal()
+	this.getDesktop().remove(this)
+	this.getDesktop().repaint()
+	return true
+}

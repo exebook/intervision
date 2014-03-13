@@ -20,7 +20,7 @@ TButton.can.init = function(keycode, title, onClick) {
 }
 
 TButton.can.draw = function() {
-	this.clear(this.pal[0], this.pal[1])
+	this.clear()
 	if (this.title != undefined) {
 		var title = ''
 		if (typeof this.title == 'string') title = this.title
@@ -41,19 +41,13 @@ TLabel.can.init = function(title) {
 	this.pal = getColor.dialog
 }
 TLabel.can.draw = function() {
-	this.clear(this.pal[0], this.pal[1])
+	this.clear()
 	if (this.title != undefined) {
 		var title = ''
 		if (typeof this.title == 'string') title = this.title
 		if (typeof this.title == 'function') title = this.title()
 		this.print(0, 0, title, this.pal[0], this.pal[1])
 	}
-}
-
-TInput = kindof(TEdit)
-TInput.init = function(text) {
-	dnaof(this)
-	this.text = text
 }
 
 TDialog = kindof(TWindow)
@@ -87,13 +81,6 @@ TDialog.can.onKey = function(K) {
 	}
 	return dnaof(this, K)
 }
-TDialog.can.close = function() {
-	//assume that parent is TDesktop
-	this.parent.hideModal()
-	this.parent.remove(this)
-	this.parent.repaint()
-	return true
-}
 
 TOkCancel = kindof(TDialog)
 TOkCancel.can.init = function(message) {
@@ -126,25 +113,36 @@ TMessageBox.can.init = function() {
 	$.ok = TButton.create(36, 'Ладно', function() {
 		log('you clicked Button1')
 		$.close()
+		if (this.callback != undefined) this.callback(true)
 		return true
 	})
 	$.add($.ok, 10, 1)
 	$.cancel = TButton.create(9, 'Отмена', function() {
 		log('you clicked Cancel')
 		$.close()
+		if (this.callback != undefined) this.callback(false)
 		return true
 	})
 	$.add($.cancel, 10, 1)
 }
 
-messageBox = function(desktop, message) {
+messageBox = function(desktop, message, callback) {
 	message = '   ' + message + '   '
 	var $ = TDialog.create(message.length + 10, 8)
+	$.callback = callback
 	$.addRow();
 	$.msg = TLabel.create(); $.msg.title = message; $.add($.msg, message.length, 1); $.addRow();$.addRow();
-	var ok = TButton.create(36, 'Ясно', function() { $.close(); return true }); $.add(ok, 10, 1)
+	var ok = TButton.create(keycode.ENTER, 'Ясно', function() {
+		$.close()
+		if ($.callback != undefined) $.callback(true)
+		return true
+	}); $.add(ok, 10, 1)
 	ok.x = ($.w >> 1) - (ok.w >> 1)
-	$.add(TButton.create(9, '', function() { $.close(); return true }), 0, 0)
+	$.add(TButton.create(keycode.ESCAPE, '', function() {
+		$.close()
+		if ($.callback != undefined) $.callback(false)
+		return true
+	}), 0, 0)
 	desktop.showModal($)
 }
 

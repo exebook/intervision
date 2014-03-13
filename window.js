@@ -21,9 +21,9 @@ TWindow.can.solo = function(child) {
 }
 TWindow.can.draw = function(state) {
 	this.clear()
+	this.drawFrame(state, this.border * 3, this.border, this.w - this.border * 6, this.h - this.border * 2)
 	dnaof(this, state)
 	if (this.disabled == true) state.disabled = true
-	this.drawFrame(state, this.border * 3, this.border, this.w - this.border * 6, this.h - this.border * 2)
 }
 
 TWindow.can.drawFrame = function(state, x, y, w, h) {

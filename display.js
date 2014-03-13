@@ -1,7 +1,5 @@
 var fs = require('fs')
 fonts = [
-//{ name: '/usr/share/fonts/truetype/droid/DroidSansMono.ttf', extra_x: 0, tune_y: 0 },
-//{ name: '/usr/share/fonts/truetype/tlwg/TlwgMono.ttf', extra_x: 0, tune_y: 0 },
 { name: '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono.ttf', extra_x: 0, tune_y: 0 },
 { name: '/usr/share/fonts/truetype/tlwg/TlwgTypewriter.ttf'},
 { name: '/usr/share/fonts/truetype/freefont/FreeMono.ttf', extra_x: 0, tune_y: -1 },
@@ -111,7 +109,6 @@ TGLXVision.can.onSizeDo = function() {
 	var W = Math.floor(w / this.fnt[0]), H = Math.floor(h / this.fnt[1])
 	if (this.desktop.w != W || this.desktop.h != H) {
 		this.desktop.size(W, H)
-		this.desktop.onSize(W, H)
 		this.repaint()
 	}
 }
@@ -125,7 +122,7 @@ TGLXVision.can.onSize = function(w, h) {
 	this.resizeLast = {w:w, h:h}
 	if (this.resizer == undefined) this.resizer = setInterval(function() {
 		me.onSizeDo()
-	}, 500)
+	}, 200)
 	if (this. stopResize != undefined) clearTimeout(this.stopResize)
 	this. stopResize = setTimeout(function(){
 		this. stopResize  = undefined
@@ -134,24 +131,26 @@ TGLXVision.can.onSize = function(w, h) {
 		var W = me.desktop.w * me.fnt[0], H = me.desktop.h * me.fnt[1]
 		me.ignoreResize = true
 		me.setXYWH(undefined, undefined, W, H)
-	}, 1000)
+	}, 400)
 }
 
 TGLXVision.can.onPaint = function() {
+	var A = this.getXYWH()
+	this.crect(0, 0, A[2], A[3], 0xff000000)
 	if (this.caretOnly == true) return
-	try { // TODO: make all C++ win::callbacks automagic with error and backtrace
+//	try { // TODO: make all C++ win::callbacks automagic with error and backtrace
 		this.desktop.draw({ active:true, focused: true })
 		renderView(this, this.desktop, 0, 0)
-		var A = this.getXYWH(),
-			x = this.desktop.w * this.fnt[0],
+		var x = this.desktop.w * this.fnt[0],
 			y = this.desktop.h * this.fnt[1],
 			w = A[2] - 0,
 			h = A[3] - 0
 		this.crect(x, 0, w, h, 0xff000000)
 		this.crect(0, y, x, h, 0xff000000)
-	} catch (e) {
-		backtrace()
-	}
+//	} catch (e) {
+//		console.log(e)
+//		backtrace()
+//	}
 	this.caretDraw()
 }
 

@@ -3,7 +3,7 @@ TEdit.can.init = function() {
 	dnaof(this)
 	this.text = ''
 	this.name = 'TEdit'
-	this.multiline = false
+	this.multiLine = true
 	this.caretChar = '║'
 	this.pal = getColor.edit
 	this.react(0, keycode.BACK_SPACE, this.editBack)
@@ -43,6 +43,15 @@ TEdit.can.onKey = function(k) {
 	return R
 }
 
+
+TInput = kindof(TEdit)
+TInput.init = function(text) {
+	dnaof(this)
+	this.multiLine = false
+	this.text = text
+}
+
+
 TLabeledEdit = kindof(TEdit)
 TLabeledEdit.can.init = function() {
 	dnaof(this)
@@ -50,6 +59,7 @@ TLabeledEdit.can.init = function() {
 	this.spacer = '>'
 	this.name = 'TLabeledEdit'
 }
+
 TLabeledEdit.can.draw = function(state) {
 	this.clear()
 	this.print(0, 0, this.label, this.pal[2], this.pal[1])
@@ -69,20 +79,34 @@ TTextView.can.init = function() {
 	for (var i = 0; i < 40; i++) this.lines.push('')//'* * * * * * ' + i + ' * * * * * *')
 	this.name = 'TTextView'
 	this.d = 0
+	this.navx = 0
 	this.react(0, keycode.UP, this.moveCursor, {arg:'up'})
 	this.react(0, keycode.DOWN, this.moveCursor, {arg:'down'})
 	this.react(0, keycode.HOME, this.moveCursor, {arg:'home'})
 	this.react(0, keycode.END, this.moveCursor, {arg:'end'})
 	this.react(0, keycode.PAGE_UP, this.moveCursor, {arg:'pageup'})
 	this.react(0, keycode.PAGE_DOWN, this.moveCursor, {arg:'pagedown'})
+	this.react(0, keycode.LEFT, this.moveCursor, {arg:'left'})
+	this.react(0, keycode.RIGHT, this.moveCursor, {arg:'right'})
+	this.pal = getColor.syntax
+	this.tabSize = 3
 }
 
+TTextView.can.coloredPrint = function(x, y, s) {
+	var L = colorizeString(s)
+	for (var i = 0; i < s.length; i++) {
+		var F = this.pal[L[i] + 4]
+		this.set(x + i, y, s[i], F, this.pal[1])
+	}
+}
 TTextView.can.draw = function() {
 	dnaof(this)
 	var e = this.d + this.h, y = 0
 	for (var i = this.d; i < e; i++) {
 		if (i >= this.lines.length) break
-		this.print(0, y, this.lines[i], this.fg, this.bg)
+		var s = this.lines[i]
+		if (s == undefined) console.log('d', this.d, 'i', i, 'e', e, 'navx', this.navx)
+		this.coloredPrint(-this.navx, y, s)
 		y++
 	}
 }
@@ -95,7 +119,8 @@ TTextView.can.moveCursor = function(arg) { with (this) {
 		this.d++
 		if (this.d > this.lines.length - this.h)  this.scrollToBottom()
 	} else if (arg == 'home') {
-		d = 0;
+		d = 0
+		x = 0
 	} else if (arg == 'end') {
 		d = lines.length - h + 1
 		if (d < 0) d = 0
@@ -105,6 +130,12 @@ TTextView.can.moveCursor = function(arg) { with (this) {
 	} else if (arg == 'pagedown') {
 		d += h - 1
 		if (d > lines.length - h + 1) d = lines.length - h + 1
+		if (d < 0) d = 0
+	} else if (arg == 'left') {
+		navx -= 5
+		if (navx < 0) navx = 0
+	} else if (arg == 'right') {
+		navx += 5
 	}
 	return true
 }}
@@ -113,23 +144,68 @@ TTextView.can.scrollToBottom = function() {
 	if (this.d < 0) this.d = 0
 }
 
-TModalTextView = kindof(TTextView)
-TModalTextView.can.onKey = function(key, down) {
-	if (key == 9) {
-		this.parent.hideModal(this)
-		repaint()
-		return
-	}
-	dnaof(this, key, down)
+TScrollBar = kindof(TView)
+TScrollBar.can.init = function() {
+	this.pal = getColor.view
+}
+TScrollBar.can.draw = function(state) {
+//	dnaof(this, state)
+	this.clear('░', this.pal[0], this.pal[1])
+	var track = this.track()
+	var max = track.size + 1//track.page -- depends on pagedown/end behaviour
+	var Y = Math.round(this.h * (track.pos / max))
+	this.print(0, Y, '  ', this.pal[1], this.pal[0])
 }
 
-viewFile = function(Desktop, s) {
-	var t = TModalTextView.create()
-	var size = glxwin.ijs_fsize(s)
-	if (size > 100000) { messageBox('Файл ' + s + ' слишком большой, ' + readableSize(size)); return }
-	t.lines = wrapLines(glxwin.ijs_load(s).replace(/\r/g, '').split('\n'), Desktop.w)
-	if (TODO) t.size(Desktop.w, Desktop.h); else t.size(30, 12)
-	Desktop.showModal(t)
+TModalTextView = kindof(TWindow)
+TModalTextView.can.init = function(Desktop, fileName) {
+	dnaof(this)
+	this.title = fileName
+	this.viewer = TTextView.create()
+	this.add(this.viewer)
+	this.scrollBar = TScrollBar.create()
+	this.add(this.scrollBar)
+	this.scrollBar.disabled = true
+	this.react(0, keycode.ESCAPE, this.close)
+	this.actor = this.viewer
+	this.pal = getColor.syntax
+	this.fileName = fileName
+}
+
+TModalTextView.can.loadFile = function() {
+	this.viewer.lines = fs.readFileSync(this.fileName).toString().replace(/\r/g, '').split('\n')
+}
+
+TModalTextView.can.size = function(W, H) {
+	dnaof(this, W, H)
+	this.viewer.size(W - 3, H - 2)
+	this.viewer.pos(1, 1)
+	this.scrollBar.size(2, H - 2)
+	this.scrollBar.pos(W - 2, 1)
+//	this.viewer.lines = wrapLines(this.viewer.lines1, this.viewer.w*100)
+	this.scrollBar.track = function() {
+		return { pos: this.d, size: this.lines.length, page: this.h }
+	}.bind(this.viewer)
+}
+
+function viewFileContinue(yes) {
+	if (yes == false) return
+	this.loadFile()
+	this.size(this.getDesktop().w, this.getDesktop().h)//; else t.size(30, 12)
+	this.getDesktop().showModal(this)
+}
+
+viewFile = function(Desktop, fileName) {
+	var t = TModalTextView.create(Desktop, fileName)
+	t.parent = Desktop
+	var size = fs.statSync(fileName).size
+	var maxSize = 300000
+	var f = viewFileContinue.bind(t)
+	if (size > maxSize) {
+		messageBox(Desktop, 'Файл ' + fileName.split('/').pop() + ' великоват, ' 
+			+ readableSize(size) + ', открыть всё равно?', f)
+	} else f()
+	return t
 }
 
 editFile = function(s) {
