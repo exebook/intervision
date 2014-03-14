@@ -88,3 +88,63 @@ backtrace = function() {
 		log('---    end   ---')
 	}
 }
+
+
+function idChar(char) {
+	return ('qazwsxedcrfvtgbyhnujmikolpQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890').indexOf(char) >= 0
+}
+
+breakPara = function(s, W) {
+	var L = [], w = 0
+	for (var i = 0; i < s.length; i++) {
+		if (w == W) {
+			var maxback = W / 2
+			while (maxback-- > 0 && idChar(s[i - 1]) && idChar(s[i])) w--, i--
+			L.push(w), w = 0
+		}
+		w++
+	}
+	L.push(w)
+	return L
+}
+
+getParts = function(s, C, L) {
+	var R ={ s: [], c: [] }, x = 0
+	for (var i = 0; i < L.length; i++) {
+		var t = s.substr(x, L[i])
+		x += L[i]
+		R.s.push(t)
+		R.c.push(C.splice(0, L[i]))
+	}
+	return R
+}
+
+function zz(N,t) {
+	var x = 0
+	var L = breakPara(t, N)
+	for (var i = 0; i < L.length; i++) {
+		var s = t.substr(x, L[i])
+		while (s.length < N) s += ' '//'░'
+		x += L[i]
+		log('|'+s+'|')
+	}
+}
+
+function testZZ() {
+//	for (var i = 4; i < 15; i++) {
+	var t = '12345+abcdef+hello'
+	var R = breakPara(t, 10)
+	var L = getParts(t, R, 10)
+	for (var i = 0; i < L.length; i++) {
+		console.log(L[i])
+	}
+
+//		zz(i,'abc+xyz')
+//		zz(i,'12345+12345')
+//		zz(i,'TEdit.can.getHeight() = function() {')
+//	}
+}
+
+//testZZ()
+//process.exit()
+

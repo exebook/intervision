@@ -67,7 +67,12 @@ if (this.items == undefined) log(this.name)
 	}
 }
 TGroup.can.onMouse = function(button, down, x, y) {
-	if (!down) return
+	if (!down) {
+		var n = this.onMouse.prev
+		if (n) return n.onMouse(button, down, x - n.x, y - n.y)
+		return
+	}
+	this.onMouse.prev = undefined
 	var n = this.whoAtXY(x, y)
 	this.actor = undefined
 //	log('mouse', n == undefined ? 'empty' : n.name)
@@ -75,6 +80,7 @@ TGroup.can.onMouse = function(button, down, x, y) {
 		var ret = this.actor != n
 		if (down) if (n.disabled != true) this.actor = n
 		if (n.onMouse != undefined) {
+			this.onMouse.prev = n
 			if (n.onMouse(button, down, x - n.x, y - n.y)) ret = true
 		}
 		return ret

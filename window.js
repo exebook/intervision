@@ -55,4 +55,3 @@ TWindow.can.drawFrame = function(state, x, y, w, h) {
 		this.print((this.w >> 1) - (title.length + 2 >> 1), this.h-1 - (1 * this.border), ' '+title+' ', this.pal[0], this.pal[1])
 	}
 }
-

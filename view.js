@@ -22,7 +22,8 @@ nortonPalette = {
 		0xf00, // key 3 TView
 		0xa03,  // false this
 		],
-	console: [0x6a6, 0x021]
+	console: [0x6a6, 0x021],
+	editor: [0x444, 0xfff]
 }
 //	var cnorm = 0, csym = 1, cnum = 2, cstr = 3, cid = 4, ckey = 5
 

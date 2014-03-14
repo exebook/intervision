@@ -8,9 +8,7 @@ TKeyCode.can.init = function() {
 	this.codes = [0,0,0,0,0,0,0]
 	var $ = this
 	this.key.title = function() { return $.codes.join('-') }
-log('--->')
 	this.add(this.key, 30, 1)
-log('<---')
 	this.addRow()
 	this.cancel = TButton.create(9, 'Закрыть', function() { $.close(); return true })
 	this.add(this.cancel, 10, 1)
