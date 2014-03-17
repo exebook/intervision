@@ -89,6 +89,13 @@ backtrace = function() {
 	}
 }
 
+insertString = function(str, sub, at) {
+	return str.substr(0, at) + sub + str.substr(at, str.length - at)
+}
+
+deleteString = function(str, from, to) {
+	return str.substr(0, from) + str.substr(to, str.length)
+}
 
 function idChar(char) {
 	return ('qazwsxedcrfvtgbyhnujmikolpQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890').indexOf(char) >= 0
@@ -108,7 +115,7 @@ breakPara = function(s, W) {
 	return L
 }
 
-getParts = function(s, C, L) {
+getParts = function(s, C, L) { // str: '12345+abcdef+hello', width: 10, result: [ 6, 7, 5 ]
 	var R ={ s: [], c: [] }, x = 0
 	for (var i = 0; i < L.length; i++) {
 		var t = s.substr(x, L[i])
@@ -133,13 +140,15 @@ function zz(N,t) {
 function testZZ() {
 //	for (var i = 4; i < 15; i++) {
 	var t = '12345+abcdef+hello'
+	t = ''
 	var R = breakPara(t, 10)
+	log(t, 10, R)
 	var L = getParts(t, R, 10)
 	for (var i = 0; i < L.length; i++) {
 		console.log(L[i])
 	}
 
-//		zz(i,'abc+xyz')
+		zz(i,'abc+xyz')
 //		zz(i,'12345+12345')
 //		zz(i,'TEdit.can.getHeight() = function() {')
 //	}

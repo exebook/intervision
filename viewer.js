@@ -99,7 +99,7 @@ TModalTextView.can.init = function(Desktop, fileName, viewClass, colors) {
 	this.scrollBar.disabled = true
 	this.react(0, keycode.ESCAPE, this.close)
 	this.actor = this.viewer
-	this.pal = colors
+	this.pal = [getColor.syntax[0], getColor.syntax[1], getColor.syntax[2], getColor.syntax[3]]//colors
 	this.fileName = fileName
 }
 
@@ -109,7 +109,7 @@ TModalTextView.can.loadFile = function() {
 
 TModalTextView.can.size = function(W, H) {
 	dnaof(this, W, H)
-	this.viewer.size(W - 3, H - 2)
+	this.viewer.size(W - 4, H - 2)
 	this.viewer.pos(1, 1)
 	this.scrollBar.size(2, H - 2)
 	this.scrollBar.pos(W - 2, 1)
