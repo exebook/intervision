@@ -199,23 +199,50 @@ TGLXVision.can.onKey = function(down, char, key, physical) {
 
 button_state = []
 
-TGLXVision.can.onMouse = function(button, down, x, y) {
+TMouse = kindof(TObject)
+TMouse.can.init = function(X, Y, w, h) {
+	dnaof(this)
+	this.X = X, this.Y = Y
+	this.x = Math.floor(X / w)
+	this.y = Math.floor(Y / h)
+	this.w = w
+	this.h = h
+	var me = this
+	this.child = function(view) {
+		var R = TMouse.create()
+		R.x = me.x - view.x
+		R.y = me.y - view.y
+		R.X = me.X - (view.x * me.w)
+		R.Y = me.Y - (view.y * me.h)
+		R.w = me.w
+		R.h = me .h
+		R.button = me.button
+		R.down = me.down
+		return R
+	}
+}
+
+TGLXVision.can.onMouse = function(button, down, X, Y) {
+	var hand = TMouse.create(X, Y, this.fnt[0], this.fnt[1])
+	hand.down = down
+	hand.button = button
 	button_state[button] = down
-	x = Math.floor(x / this.fnt[0])
-	y = Math.floor(y / this.fnt[1])
-	if (this.desktop.onMouse(button, down, x, y)) this.repaint()
+	var ret = false
+	if (this.desktop.mouseCapture) ret = this.desktop.mouseCapture(hand)
+	else ret = this.desktop.onMouse(hand)
+	if (ret) this.repaint()
 }
 
 cursor_pos_cache = { x:-1, y:-1 }
 
-TGLXVision.can.onCursor = function (x, y) {
-	x = Math.floor(x / this.fnt[0])
-	y = Math.floor(y / this.fnt[1])
-	if (x != cursor_pos_cache.x || y != cursor_pos_cache.y) {
-		cursor_pos_cache = {x:x, y:y}
-		if (this.desktop.onCursor(x, y)) this.repaint()
+TGLXVision.can.onCursor = function (X, Y) {
+	var hand = TMouse.create(X, Y, this.fnt[0], this.fnt[1]), ret = false
+	if (this.desktop.mouseCapture) ret = this.desktop.mouseCapture(hand)
+	else if (hand.x != cursor_pos_cache.x || hand.y != cursor_pos_cache.y) {
+		cursor_pos_cache = { x: hand.x, y: hand.y }
+		ret = this.desktop.onCursor(hand)
 	}
-	return
+	if (ret) this.repaint()
 }
 
 TGLXVision.can.onFocus = function (on) {
@@ -235,4 +262,3 @@ repaint = function() {
 	}
 }
 
-//this.win.onCursor = function(x, y) { X = x, Y = y; this.repaint() }

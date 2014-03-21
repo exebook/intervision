@@ -83,8 +83,8 @@ TScrollBar.can.draw = function(state) {
 	if (this.track) {
 		var track = this.track()
 		var max = track.size + 1 // track.page -- depends on pagedown/end behaviour
-		var Y = Math.round(this.h * (track.pos / max))
-		this.print(0, Y, '  ', this.pal[1], this.pal[0])
+		var Y = Math.floor(this.h * (track.pos / max))
+		this.print(0, Y, '--', this.pal[1], this.pal[0])
 	}
 }
 
@@ -92,11 +92,12 @@ TModalTextView = kindof(TWindow)
 TModalTextView.can.init = function(Desktop, fileName, viewClass, colors) {
 	dnaof(this)
 	this.title = fileName
-	this.viewer = viewClass.create()
-	this.add(this.viewer)
 	this.scrollBar = TScrollBar.create(colors)
 	this.add(this.scrollBar)
+	this.viewer = viewClass.create()
+	this.add(this.viewer)
 	this.scrollBar.disabled = true
+	this.scrollBar.track = this.viewer.track.bind(this.viewer)
 	this.react(0, keycode.ESCAPE, this.close)
 	this.actor = this.viewer
 	this.pal = [getColor.syntax[0], getColor.syntax[1], getColor.syntax[2], getColor.syntax[3]]//colors

@@ -183,15 +183,15 @@ TList.can.whoAtXY = function(x, y) {
 	})
 	return found
 }
-TList.can.onMouse = function(button, down, x, y) {
-	if (!down && button == 0) this.sliding = false
-	if (!down && button == 1) this.sliding1 = false
-	if (down && (button == 0 || button == 1)) {
-		if (button == 0) this.sliding = true
-		if (button == 1) this.sliding1 = true
-		var found = this.whoAtXY(x, y)
+TList.can.onMouse = function(hand) {
+	if (!hand.down && hand.button == 0) this.sliding = false
+	if (!hand.down && hand.button == 1) this.sliding1 = false
+	if (hand.down && (hand.button == 0 || hand.button == 1)) {
+		if (hand.button == 0) this.sliding = true
+		if (hand.button == 1) this.sliding1 = true
+		var found = this.whoAtXY(hand.x, hand.y)
 		if (found >= 0) {
-			if (button == 1) {
+			if (hand.button == 1) {
 				this.sid = found;
 				this.slideSelMode = !this.items[this.sid].selected
 				this.selectCurrent(this.slideSelMode)
@@ -199,19 +199,19 @@ TList.can.onMouse = function(button, down, x, y) {
 			}
 			if (this.sid == found) return false;
 			var old = this.sid; this.sid = found;
-			if (button == 0) this.onItem()
+			if (hand.button == 0) this.onItem()
 			return true
 		}
 		this.sid = this.items.length - 1
 		return true
 	}
 }
-TList.can.onCursor = function(x, y) {
+TList.can.onCursor = function(hand) {
 	if (button_state[0] != true) this.sliding = false
-	if (button_state[0] && this.sliding) return this.onMouse(0, true, x, y)
+	if (button_state[0] && this.sliding) return this.onMouse({ button: 0, down: true, x:hand.x, y:hand.y })
 	if (button_state[1] != true) this.sliding1 = false
 	if (button_state[1] && this.sliding1) {
-		this.onMouse(0, true, x, y)
+		this.onMouse({button: 0, down: true, x:hand.x, y:hand.y })
 		this.selectCurrent(this.slideSelMode)
 		return true
 	}

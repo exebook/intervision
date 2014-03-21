@@ -110,3 +110,10 @@ TView.can.close = function() {
 	this.getDesktop().repaint()
 	return true
 }
+
+TView.can.getGlobal = function() {
+	if (this.parent == undefined) return { x: this.x, y: this.y }
+	var Z = this.parent.getGlobal()
+	Z.x += this.x, Z.y += this.y
+	return Z
+}

@@ -66,32 +66,35 @@ if (this.items == undefined) log(this.name)
 		}
 	}
 }
-TGroup.can.onMouse = function(button, down, x, y) {
-	if (!down) {
+
+TGroup.can.onMouse = function(hand) {
+	if (!hand.down) { // верх получает тот же кто и низ
 		var n = this.onMouse.prev
-		if (n) return n.onMouse(button, down, x - n.x, y - n.y)
+		if (n) return n.onMouse(hand.child(n))
 		return
 	}
 	this.onMouse.prev = undefined
-	var n = this.whoAtXY(x, y)
+	var n = this.whoAtXY(hand.x, hand.y)
 	this.actor = undefined
 //	log('mouse', n == undefined ? 'empty' : n.name)
 	if (n != undefined) {
 		var ret = this.actor != n
-		if (down) if (n.disabled != true) this.actor = n
+		if (hand.down) if (n.disabled != true) this.actor = n
 		if (n.onMouse != undefined) {
 			this.onMouse.prev = n
-			if (n.onMouse(button, down, x - n.x, y - n.y)) ret = true
+			if (n.onMouse(hand.child(n))) ret = true
 		}
 		return ret
 	} else return undefined
 }
-TGroup.can.onCursor = function(x, y) {
-	var n = this.whoAtXY(x, y)
+
+TGroup.can.onCursor = function(hand) {
+	var n = this.whoAtXY(hand.x, hand.y)
 	if (n != undefined) {
 		var ret// = this.actor != n
 		if (n.onCursor != undefined) {
-			if (n.onCursor(x - n.x, y - n.y)) ret = true
+			var C = hand.child(n)
+			if (n.onCursor(C)) ret = true
 		}
 		return ret
 	}
@@ -106,9 +109,11 @@ TDesktop.can.init = function() {
 TDesktop.can.getDesktop = function() {
 	return this
 }
-TDesktop.can.onMouse = function(button, down, x, y) {
-	if (this.modal != undefined) return this.modal.onMouse(button, down, x - this.modal.x, y - this.modal.y)
-	return dnaof(this, button, down, x, y)
+TDesktop.can.onMouse = function(hand) {
+	if (this.modal != undefined) return this.modal.onMouse({
+		button: hand.button, down: hand.down, x: hand.x - this.modal.x, y: hand.y - this.modal.y
+	})
+	return dnaof(this, hand)
 }
 TDesktop.can.showModal = function(d, x, y, w, h) {
 	if (x == undefined) x = (this.w >> 1) - (d.w >> 1)

@@ -28,8 +28,8 @@ TButton.can.draw = function() {
 		this.print((this.w >> 1) - (title.length + 2 >> 1), 0, ' ' + title + ' ', this.pal[0], this.pal[1])
 	}
 }
-TButton.can.onMouse = function (button, down, x, y) {
-	if (down && button == 0 && this.onClick != undefined) return this.onClick()
+TButton.can.onMouse = function (hand) {
+	if (hand.down && hand.button == 0 && this.onClick != undefined) return this.onClick()
 }
 
 TLabel = kindof(TControl)
@@ -145,4 +145,38 @@ messageBox = function(desktop, message, callback) {
 	}), 0, 0)
 	desktop.showModal($)
 }
+
+
+TInput = kindof(TEdit)
+TInput.init = function(text) {
+	dnaof(this)
+	this.multiLine = false
+	this.text = text
+}
+
+
+TLabeledEdit = kindof(TEdit)
+TLabeledEdit.can.init = function() {
+	dnaof(this)
+	this.label = ''
+	this.spacer = '>'
+	this.name = 'TLabeledEdit'
+}
+
+TLabeledEdit.can.draw = function(state) {
+	this.clear()
+	this.print(0, 0, this.label, this.pal[2], this.pal[1])
+	this.print(this.label.length, 0, this.spacer, this.pal[2], this.bg)
+	this.print(this.label.length + this.spacer.length, 0, this.text, this.pal[0], this.pal[1])
+	if (state.focused) {
+//		this.print(this.label.length + this.spacer.length + this.text.length, 0,  this.caretChar, 0x3f3, this.bg)
+		this.caret = {x: this.label.length + this.spacer.length + this.text.length, y:0}
+	} else delete this.caret
+}
+// auto keyword list by appearance in this file + config with weights
+
+editFileAlt = function(s) {
+	glxwin.sh_async('pluma '+ s)
+}
+
 
