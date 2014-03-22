@@ -59,7 +59,7 @@ TEdit.can.init = function() {
 	this.react(101, keycode.RIGHT, this.shiftSel, {arg:'wordright'})
 	this.react(101, keycode.PAGE_UP, this.shiftSel, {arg:'top'})
 	this.react(101, keycode.PAGE_DOWN, this.shiftSel, {arg:'bottom'})
-	this.clipboardData = ''
+	this.clipboardData = '<abc\ncde>'
 //	this.sel.start(0, 0)
 //	this.sel.end(0, 0)
 }
@@ -77,6 +77,7 @@ TEdit.can.draw = function(state) {
 		lines = this.text.getLines(this.delta, this.delta + this.h),
 		Y = this.delta, sel = this.sel.get(), selState
 		if (sel) sel.a = this.text.textToScroll(sel.a.y, sel.a.x), sel.b = this.text.textToScroll(sel.b.y, sel.b.x)
+//	if (caret[1] == undefined) caret[1] = 0
 	if (state.focused && caret) F = this.pal[2], this.caret = { x: caret[1], y: caret[0] - this.delta }
 	else delete this.caret
 	for (var l = 0; l < lines.length; l++) {
@@ -347,7 +348,7 @@ TEdit.can.deleteTo = function(arg) {
 		this.sel.start(this.para, this.sym)
 		this.moveCursor(arg)
 		this.sel.end(this.para, this.sym)
-		if (this.sel.clean()) return false
+		if (this.sel.clean()) return true
 	}
 	this.deleteSelected()
 	this.scrollToView()
@@ -399,6 +400,7 @@ TEdit.can.commandEnter = function () {
 }
 
 TEdit.can.insertText = function (txt) {
+	if (this.multiLine == false && txt.indexOf('\n') >= 0) return true
 	if (!this.sel.clean()) this.deleteSelected()
 	var A = this.text.insertTextAt(txt, this.para, this.sym)
 	this.para = A.para, this.sym = A.sym
@@ -588,5 +590,18 @@ TEdit.can.commandTab = function(arg) {
 	}
 	this.getDesktop().display.caretReset()
 	return true
+}
+
+TEdit.can.getText = function () {
+	return this.text.getText()
+}
+
+TEdit.can.setText = function(s) {
+	this.text.setText(s)
+	this.sel.clear()
+	this.para = 0
+	this.sym = 0
+	this.moveCursor('bottom')
+	this.moveCursor('end')
 }
 

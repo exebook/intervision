@@ -19,8 +19,8 @@ function selectFirstAvailableFont() {
 	return -1
 }
 
-var f = selectFirstAvailableFont()
-f = 3
+//var f = selectFirstAvailableFont()
+var f = 3
 
 function renderView(win, view, atx, aty) {
 	var TEXT = [], COLOR = []

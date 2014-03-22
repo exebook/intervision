@@ -14,18 +14,14 @@ TKeyCode.can.init = function() {
 	this.add(this.cancel, 10, 1)
 	this.size(this.w, this.addY + 3)
 }
-TKeyCode.can.onKey = function(key, down, physical) {
-	if (dnaof(this, key, down, physical)) return true
-	if (down && physical) {
-		this.codes.push(key)
-		this.codes.shift()
-		repaint()
-	}
-}
 
-showKeyCode = function(Desktop, panel) {
-	var keyCode = TKeyCode.create()
-	Desktop.showModal(keyCode)
+TKeyCode.can.onKey = function(K) {
+	if (dnaof(this, K)) return true
+	if (K.down && K.physical) {
+		this.codes.push(K.key)
+		this.codes.shift()
+		this.repaint()
+	}
 }
 
 THelp = kindof(TDialog)

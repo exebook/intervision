@@ -1,7 +1,7 @@
 
 shortcutEnable = function(role, on) {
 	for (var i = 0; i < this.length; i++) {
-		if (this[i].role.indexOf(role) >= 0) this[i].enabled = on
+		if (this[i].role.indexOf(role) >= 0 || role == 'all') this[i].enabled = on
 	}
 }
 

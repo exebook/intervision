@@ -154,25 +154,6 @@ TInput.init = function(text) {
 	this.text = text
 }
 
-
-TLabeledEdit = kindof(TEdit)
-TLabeledEdit.can.init = function() {
-	dnaof(this)
-	this.label = ''
-	this.spacer = '>'
-	this.name = 'TLabeledEdit'
-}
-
-TLabeledEdit.can.draw = function(state) {
-	this.clear()
-	this.print(0, 0, this.label, this.pal[2], this.pal[1])
-	this.print(this.label.length, 0, this.spacer, this.pal[2], this.bg)
-	this.print(this.label.length + this.spacer.length, 0, this.text, this.pal[0], this.pal[1])
-	if (state.focused) {
-//		this.print(this.label.length + this.spacer.length + this.text.length, 0,  this.caretChar, 0x3f3, this.bg)
-		this.caret = {x: this.label.length + this.spacer.length + this.text.length, y:0}
-	} else delete this.caret
-}
 // auto keyword list by appearance in this file + config with weights
 
 editFileAlt = function(s) {
