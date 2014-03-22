@@ -89,6 +89,7 @@ TGroup.can.onMouse = function(hand) {
 }
 
 TGroup.can.onCursor = function(hand) {
+	dnaof(this, hand)
 	var n = this.whoAtXY(hand.x, hand.y)
 	if (n != undefined) {
 		var ret// = this.actor != n
@@ -110,9 +111,10 @@ TDesktop.can.getDesktop = function() {
 	return this
 }
 TDesktop.can.onMouse = function(hand) {
-	if (this.modal != undefined) return this.modal.onMouse({
-		button: hand.button, down: hand.down, x: hand.x - this.modal.x, y: hand.y - this.modal.y
-	})
+	if (this.modal != undefined) {
+		var C = hand.child(this.modal)
+		return this.modal.onMouse(C)
+	}
 	return dnaof(this, hand)
 }
 TDesktop.can.showModal = function(d, x, y, w, h) {

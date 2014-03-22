@@ -89,17 +89,6 @@ backtrace = function() {
 	}
 }
 
-//function zz(N,t) {
-//	var x = 0
-//	var L = breakPara(t, N, 3)
-//	for (var i = 0; i < L.length; i++) {
-//		var s = t.substr(x, L[i])
-//		while (s.length < N) s += ' '//'░'
-//		x += L[i]
-//		log('|'+s+'|')
-//	}
-//}
-//
 //function testZZ() {
 ////	for (var i = 4; i < 15; i++) {
 //	var t = '12345+abcdef+hello'

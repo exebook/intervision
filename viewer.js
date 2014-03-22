@@ -73,18 +73,23 @@ TTextView.can.scrollToBottom = function() {
 	if (this.d < 0) this.d = 0
 }
 
+TTextView.can.track = function() {
+	return { pos: this.d, size: this.lines.length, page: this.h }
+}
+
 TScrollBar = kindof(TView)
 TScrollBar.can.init = function(color) {
 	this.pal = color
 }
 TScrollBar.can.draw = function(state) {
-//	dnaof(this, state)
-	this.clear('░', this.pal[0], this.pal[1])
+	this.clear(' ', this.pal[0], this.pal[1] | 0x1000)
+//	this.print(0, 0, '  ', this.pal[0], this.pal[1] | 0x1000)
+//	this.print(0, this.h - 1, '  ', this.pal[0], this.pal[1] | 0x1000)
 	if (this.track) {
 		var track = this.track()
 		var max = track.size + 1 // track.page -- depends on pagedown/end behaviour
 		var Y = Math.floor(this.h * (track.pos / max))
-		this.print(0, Y, '--', this.pal[1], this.pal[0])
+		this.print(0, Y, '::', this.pal[0], this.pal[1] | 0x3000)
 	}
 }
 
@@ -94,10 +99,11 @@ TModalTextView.can.init = function(Desktop, fileName, viewClass, colors) {
 	this.title = fileName
 	this.scrollBar = TScrollBar.create(colors)
 	this.add(this.scrollBar)
-	this.viewer = viewClass.create()
+	this.viewer = viewClass.create(fileName)
 	this.add(this.viewer)
 	this.scrollBar.disabled = true
 	this.scrollBar.track = this.viewer.track.bind(this.viewer)
+	this.scrollBar.pal = [this.viewer.pal[0], this.viewer.pal[1]]
 	this.react(0, keycode.ESCAPE, this.close)
 	this.actor = this.viewer
 	this.pal = [getColor.syntax[0], getColor.syntax[1], getColor.syntax[2], getColor.syntax[3]]//colors
@@ -114,9 +120,34 @@ TModalTextView.can.size = function(W, H) {
 	this.viewer.pos(1, 1)
 	this.scrollBar.size(2, H - 2)
 	this.scrollBar.pos(W - 2, 1)
-//	this.scrollBar.track = function() {
-//		return { pos: this.d, size: this.lines.length, page: this.h }
-//	}.bind(this.viewer)
+}
+
+TModalTextView.can.draw = function(state) {
+	dnaof(this, state)
+	if (this.viewer.isModified) {
+		var B = this.pal[1] | 0x1000
+		if (this.viewer.isModified()) this.print(2, this.h-1, ' '+markerModified+' ', 0x0ff, B); else this.print(2, this.h-1, '   ', undefined, B)
+	}
+}
+
+
+TFileEdit = kindof(TEdit)
+TFileEdit.can.init = function(fileName) {
+	dnaof(this)
+	this.fileName = fileName
+	this.text.setText(fs.readFileSync(fileName).toString())
+	this.react(0, keycode.F2, this.save)
+	this.react(100, keycode['s'], this.save)
+}
+
+TFileEdit.can.save = function() {
+	fs.writeFileSync(this.fileName, this.text.getText())
+	this.text.modified = false
+	return true
+}
+
+TFileEdit.can.isModified = function() {
+	return this.text.modified == true
 }
 
 function viewFileContinue(yes) {

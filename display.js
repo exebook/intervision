@@ -12,6 +12,7 @@ fonts = [
 { name: '/y/yaui/glx/f/consola.ttf', extra_x: -1, tune_y: 0 },
 { name: '/y/yaui/glx/f/fixed7.ttf', extra_x: 0, tune_y: 0 },
 ]
+markerModified = 'x'
 var fontSize = 22
 function selectFirstAvailableFont() {
 	for (var i = 0; i < fonts.length; i++) if (fs.existsSync(fonts[i].name)) return i

@@ -117,3 +117,7 @@ TView.can.getGlobal = function() {
 	Z.x += this.x, Z.y += this.y
 	return Z
 }
+
+TView.can.onCursor = function(hand) {
+	this.getDesktop().display.setCursor(0)
+}
