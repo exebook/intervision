@@ -2,26 +2,37 @@ TSelection = kindof(TObject)
 TSelection.can.init = function() {
 	var data = undefined
 	function sort() { with (data) {
-		if ((a.y > b.y) || (a.y == b.y && a.x > b.x)) s = { a: data.b, b: data.a }
-		else s = { a:data.a, b: data.b }
+		if ((a.y > b.y) || (a.y == b.y && a.x > b.x)) s = { a: { x: data.b.x, y: data.b.y}, b: {x: data.a.x, y: data.a.y} }
+		else s = { b: { x: data.b.x, y: data.b.y}, a: {x: data.a.x, y: data.a.y} }
 		return s
 	}}
 	this.get = function() {
 		if (this.clean()) return undefined
+		if (this.ender) {
+			var ext = this.ender(sort())
+			if (ext.a.x == ext.b.x && ext.a.y == ext.b.y) return
+			return ext
+		}
 		return sort()
 	}
 	this.clear = function() {
 		data = undefined
 	}
 	this.clean = function() {
-		return (data == undefined || data.b == undefined)
+		if (data == undefined || data.b == undefined) return true
+		if (this.ender) {
+			var ext = this.ender(sort())
+			return (ext.a.x == ext.b.x && ext.a.y == ext.b.y)
+		}
+		if (data.a.x == data.b.x && data.a.y == data.b.y) return true
+		return false
 	}
-	this.start = function(y, x) {
+	this.start = function(y, x, ender) {
+		this.ender =ender
 		data = { a: { x:x, y:y }}
 	}
 	this.end = function(y, x) {
 		if (data == undefined) return
-		if (data.a.x == x && data.a.y == y) return
 		data.b = { x:x, y:y }
 	}
 }
@@ -34,7 +45,47 @@ deleteString = function(str, from, to) {
 	return str.substr(0, from) + str.substr(to, str.length)
 }
 
+function charType(ch) {
+	var type = 0
+//	if ((' \t').indexOf(ch) >= 0) type = 1
+	if ((' \t`~!@#$%^&*()_-+={[}]|\"\':;?/>.<,').indexOf(ch) >= 0) type = 2
+	if (('0123456789').indexOf(ch) >= 0) type = 3
+	return type
+}
 
+wordLeft = function(s, X) {
+	var x = X - 1, type = charType(s[x])
+	if (x == 0) return 0
+	x--
+	while (true) {
+		if (x <= 0) {
+			if (type == 0 && charType(s[0]) != 0) return 1
+			return 0
+		}
+		var t = charType(s[x])
+		if (t != type) {
+			//if (X - x < 4) { type = charType(s[--x]); continue }
+			return x + 1
+		}
+		x--
+	}
+	return x
+}
+
+wordRight = function(s, X) {
+	var x = X, type = charType(s[x])
+	x++
+	while (true) {
+		if (x >= s.length) return s.length
+		 var t = charType(s[x])
+		 if (t != type) {
+			//if (x - X < 3) { type = charType(s[++x]); continue }
+			return x
+		}
+		x++
+	}
+	return x
+}
 var idCharHash = {}
 var idChars = 'qazwsxedcrfvtgbyhnujmikolpQAZWSXEDCRFVTG'
 	+'BYHNUJMIKOLP1234567890йцукен'
@@ -104,6 +155,7 @@ TText.can.init = function() {
 	this.tab = 3
 	this.undoClear()
 	this.modified = false
+	this.colored = true
 }
 
 TText.can.size =function(w, h) {
@@ -125,7 +177,8 @@ TText.can.getLines = function(y, count) {
 		var s = this.L[i]
 		var B = breakPara(s, this.w, this.tab)
 		if (h + B.length > y) {
-			var C = colorizeString(s)
+			var C = []
+			if (this.colored == true) C = colorizeString(s)
 			var P = getParts(s, C, B)
 		}
 		var x = 0

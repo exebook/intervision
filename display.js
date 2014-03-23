@@ -85,11 +85,18 @@ TGLXVision.can.caretDraw= function() {
 		TEXT[0][0] = ch, COLOR[0][0] = clr
 		x = this.fnt[0] * x, y = this.fnt[1] * y
 		this.colorText(x, y, 1, 1, TEXT, COLOR)
-		if (this.caretFlash == true) 
+		if (this.caretFlash == true) {
+			var C = 0xff008800, c
+			if (this.desktop.caret.color) {
+				c = this.desktop.caret.color
+				C = (c & 0xff) << 4 | c & 0xf | (c & 0xff0) << 8 
+						| (c & 0xf00) << 12 | (~c & 0xf000) << 16 | (~c & 0xf000) << 12
+			}
 			if (this.caretVertical == true)
 				this.crect(x,  y, x + 3, y + this.fnt[1], 0xffffffff)
 			else
-				this.crect(x,  y + this.fnt[1] - 3, x + this.fnt[0], y + this.fnt[1], 0xffffffff)
+				this.crect(x,  y + this.fnt[1] - 3, x + this.fnt[0], y + this.fnt[1], C)
+		}
 		this.paintEnd()
 	}
 }

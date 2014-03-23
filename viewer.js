@@ -106,7 +106,8 @@ TModalTextView.can.init = function(Desktop, fileName, viewClass, colors) {
 	this.scrollBar.pal = [this.viewer.pal[0], this.viewer.pal[1]]
 	this.react(0, keycode.ESCAPE, this.close)
 	this.actor = this.viewer
-	this.pal = [getColor.syntax[0], getColor.syntax[1], getColor.syntax[2], getColor.syntax[3]]//colors
+	var syntax = colors
+	this.pal = [syntax[0], syntax[1], syntax[2], syntax[3]]//colors
 	this.fileName = fileName
 }
 
@@ -125,8 +126,8 @@ TModalTextView.can.size = function(W, H) {
 TModalTextView.can.draw = function(state) {
 	dnaof(this, state)
 	if (this.viewer.isModified) {
-		var B = this.pal[1] | 0x1000
-		if (this.viewer.isModified()) this.print(2, this.h-1, ' '+markerModified+' ', 0x0ff, B); else this.print(2, this.h-1, '   ', undefined, B)
+		var B = this.pal[1] | 0x1000, F = this.pal[0]
+		if (this.viewer.isModified()) this.print(2, this.h-1, ' '+markerModified+' ', F, B); else this.print(2, this.h-1, '   ', undefined, B)
 	}
 }
 

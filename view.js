@@ -10,17 +10,31 @@ nortonPalette = {
 	label: [0, 0xe0e, 0xf00, 0x0f0],
 	button: [0, 0x888],
 	edit: [0x990, 0x500, 0xff0],
-	syntax: [0xff0, 0x990, 0x400, 0xaa0, 
+	syntaxCyan: [0xff0, 0x990, 0x400, 0xaa0, 
 		0x0, // space
 		0xdd0, // sym
 		0x0f8, // num
 		0x00e, //str
 		0x433, // id
+		0x0ff, // match hilite
 		0x0ff, //key 0 function
 		0x0af, // key 1 dnaof
 		0x0, // key 2 console
 		0xf00, // key 3 TView
 		0xa03,  // false this
+		],
+	syntaxWhite: [0x844, 0xfff, 0x0, 0xfff, 
+		0x0, // space
+		0, // sym
+		0x077, // num
+		0x04f, //str
+		0x777, // id
+		0x00f, //match hilite
+		0xf00, //key 0 function
+		0x282, // key 1 dnaof
+		0x0, // key 2 console
+		0xf80, // key 3 TView
+		0x740,  // false this
 		],
 	console: [0x6a6, 0x021],
 	editor: [0x444, 0xfff]
@@ -41,19 +55,24 @@ TView.can.init = function() {
 TView.can.getDesktop = function() {
 	return this.parent.getDesktop()
 }
+
 TView.can.repaint = function() {
 	this.parent.repaint()
 }
+
 TView.can.size = function(w, h) {
 	this.w = w, this.h = h, this.data = []
 }
+
 TView.can.pos = function(x, y) {
 	this.x = x, this.y = y
 }
+
 TView.can.get = function (x, y) {
 	if (this.data[y] == undefined) return undefined
 	return this.data[y][x]
 }
+
 TView.can.set = function (x, y, ch, fg, bg) {
 	if (this.data[y] == undefined) this.data[y] = []
 	var o = this.data[y][x]
@@ -63,9 +82,10 @@ TView.can.set = function (x, y, ch, fg, bg) {
 	if (bg != undefined) o.bg = bg
 	this.data[y][x] = o
 }
+
 TView.can.render = function() {
 	if (this.caret != undefined) {
-		this.parent.caret = { x:this.caret.x + this.x, y:this.caret.y + this.y }
+		this.parent.caret = { x:this.caret.x + this.x, y:this.caret.y + this.y, color: this.caret.color }
 	}
 	for (var y = 0; y < this.h; y++) {
 		for (var x = 0; x < this.w; x++) {
@@ -76,6 +96,7 @@ TView.can.render = function() {
 		}
 	}
 }
+
 TView.can.print = function (x, y, s, fg, bg) {
 	var e = s.length
 	if (x + e > this.w) e = this.w - x
@@ -83,6 +104,7 @@ TView.can.print = function (x, y, s, fg, bg) {
 		this.set(x + i, y, s.charAt(i), fg, bg)
 	}
 }
+
 TView.can.rect = function(X, Y, w, h, ch, fg, bg) {
 	for (var y = Y; y < Y+h; y++) {
 		for (var x = X; x < X+w; x++) {
@@ -90,12 +112,14 @@ TView.can.rect = function(X, Y, w, h, ch, fg, bg) {
 		}
 	}
 }
+
 TView.can.clear = function(ch, fg, bg) {
 	if (ch == undefined) ch = ' '
 	if (fg == undefined) fg = this.pal[0]
 	if (bg == undefined) bg = this.pal[1]
 	this.rect(0, 0, this.w, this.h, ch, fg, bg)
 }
+
 TView.can.draw = function(state) {
 	this.clear(' ', this.pal[0], this.pal[1])
 }

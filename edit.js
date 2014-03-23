@@ -6,10 +6,11 @@ TEdit.can.init = function() {
 	this.L = []
 	this.name = 'TEdit'
 	this.multiLine = true
-	this.pal = getColor.syntax
+	this.pal = getColor.syntaxWhite
 	this.react(100, keycode['z'], this.commandUndo, {arg:'undo'})
 	this.react(101, keycode['z'], this.commandUndo, {arg:'redo'})
 
+	this.react(100, keycode['m'], this.setMatch)
 	this.react(100, keycode['c'], this.userCopy)
 	this.react(100, keycode['v'], this.userPaste)
 	this.react(100, keycode['x'], this.userCut)
@@ -64,10 +65,40 @@ TEdit.can.init = function() {
 //	this.sel.end(0, 0)
 }
 
+TEdit.can.setMatch = function () {
+	if (this.match) {
+		this.oldMatch = this.match
+		delete this.match
+		return true
+	}
+	if (!this.sel.clean()) {
+		var sel = this.sel.get()
+		if (sel && sel.a.y == sel.b.y) {
+			this.match = this.text.getSelText(this.sel)
+			return true
+		}
+	}
+	if (this.oldMatch) this.match = this.oldMatch
+	return true
+}
+
 TEdit.can.size = function(w, h) {
 	dnaof(this, w, h)
 	this.text.w = w
 	this.text.h = h
+}
+
+function colorizeMatch(line, match, colorIndex) {
+	if (match.length > 31) return
+	var s = line.s
+	var t = ''
+	var i = 0;
+	while (true) {
+		i = s.indexOf(match, i)
+		if (i < 0) break
+		var m = match.length + i
+		for (; i < m; i++) line.c[i] = colorIndex
+	}
 }
 
 TEdit.can.draw = function(state) {
@@ -75,14 +106,19 @@ TEdit.can.draw = function(state) {
 	var
 		caret = this.text.textToScroll(this.para, this.sym),
 		lines = this.text.getLines(this.delta, this.delta + this.h),
-		Y = this.delta, sel = this.sel.get(), selState
-		if (sel) sel.a = this.text.textToScroll(sel.a.y, sel.a.x), sel.b = this.text.textToScroll(sel.b.y, sel.b.x)
+		Y = this.delta, sel = this.sel.get(), selState,
+		match
+	if (sel && sel.a.y == sel.b.y) match = this.text.getSelText(this.sel)
+	if (this.match) match = this.match
+	
+	if (sel) sel.a = this.text.textToScroll(sel.a.y, sel.a.x), sel.b = this.text.textToScroll(sel.b.y, sel.b.x)
 //	if (caret[1] == undefined) caret[1] = 0
-	if (state.focused && caret) F = this.pal[2], this.caret = { x: caret[1], y: caret[0] - this.delta }
+	if (state.focused && caret) F = this.pal[2], this.caret = { x: caret[1], y: caret[0] - this.delta, color: this.pal[0] }
 	else delete this.caret
 	for (var l = 0; l < lines.length; l++) {
 		var line = lines[l]
-		var B = this.pal[1]
+		if (match) colorizeMatch(line, match)
+		var B = this.pal[1], F
 		if (sel) {
 			if (Y < sel.a[0]) selState = 0
 				else if (Y == sel.a[0]) { if (Y != sel.b[0]) selState = 1; else selState = 2 }
@@ -91,15 +127,21 @@ TEdit.can.draw = function(state) {
 				else selState = 5
 		}
 		var px = 0
+		if (match) colorizeMatch(line, match, -1)
+
 		for (var x = 0; x < line.s.length; x++) {
 			B = this.pal[1]
 			var X = line.w[x]
+			var char = line.s[x], P = line.c[x]
+			if (P == -1) {
+				B = 0xff, F = 0x800
+				if (this.match) B = 0x88f, F = 0x0cc
+			} else F = this.pal[P + 4]
 			if	(selState == 5 || 
-				(selState == 1 && X >= sel.a[1])
-			||	(selState == 2 && X >= sel.a[1] && X < sel.b[1]) 
-			||	(selState == 3 && X < sel.b[1])
+					(selState == 1 && X >= sel.a[1])
+				||	(selState == 2 && X >= sel.a[1] && X < sel.b[1]) 
+				||	(selState == 3 && X < sel.b[1])
 			) B = this.pal[2]
-			var char = line.s[x], F = this.pal[line.c[x] + 4]
 			if (char == '\t') {
 //				for (var f = 0; f < this.text.tab; f++) this.set(X+f, l, '-', F | 0xd000, B) // мож пригодится
 				this.set(X+1, l, '░', this.pal[0] | 0xa000, B | 0x0000)
@@ -210,48 +252,6 @@ TEdit.can.moveCursor = function(arg) { with (this) {
 		newX()
 	}
 }}
-
-function charType(ch) {
-	var type = 0
-//	if ((' \t').indexOf(ch) >= 0) type = 1
-	if ((' \t`~!@#$%^&*()_-+={[}]|\"\':;?/>.<,').indexOf(ch) >= 0) type = 2
-	if (('0123456789').indexOf(ch) >= 0) type = 3
-	return type
-}
-
-function wordLeft(s, X) {
-	var x = X - 1, type = charType(s[x])
-	if (x == 0) return 0
-	x--
-	while (true) {
-		if (x == 0) {
-			if (type == 0 && charType(s[0]) != 0) return 1
-			return 0
-		}
-		var t = charType(s[x])
-		if (t != type) {
-			//if (X - x < 4) { type = charType(s[--x]); continue }
-			return x + 1
-		}
-		x--
-	}
-	return x
-}
-
-function wordRight(s, X) {
-	var x = X, type = charType(s[x])
-	x++
-	while (true) {
-		if (x == s.length) return s.length
-		 var t = charType(s[x])
-		 if (t != type) {
-			//if (x - X < 3) { type = charType(s[++x]); continue }
-			return x
-		}
-		x++
-	}
-	return x
-}
 
 TEdit.can.scrollToView = function () { with (this) {
 	var H = text.getHeight()
@@ -438,8 +438,13 @@ TEdit.can.dragScroll = function(arg, hand) {
 	} else {
 		var S = this.drawScrollActive
 		var D = S.d + (S.y - hand.Y)
-		if (D < 0) D = 0
-		if (D > S.H - this.h + 3) D = S.H - this.h + 3
+		if (D < 0) {
+			D = 0
+		}
+		if (D > S.H - this.h + 3) {
+			D = S.H - this.h + 3
+			// каааак это сделать та?
+		}
 		if (D != 	this.delta) {
 			this.delta = D
 			return true
@@ -458,20 +463,25 @@ TEdit.can.onCapture = function(hand) {
 	}
 }
 
+function extendSelWord(sel) {
+	sel.a.x = wordLeft(this.L[sel.a.y], sel.a.x)
+	sel.b.x = wordRight(this.L[sel.b.y], sel.b.x)
+	return sel
+}
+
 TEdit.can.mouseSelect = function(hand, noGlobal) {
 	if (noGlobal != true) {
 		var G = this.getGlobal()
 		hand.x -= G.x, hand.y -= G.y
 	}
 	if (hand.button == 10) {
-		//var A = this.text.scrollToText(this.delta + hand.y, hand.x)
-		var ax = wordLeft(this.text.L[this.para], this.sym)
+		this.sel.clear()
+		this.sel.start(this.para, this.sym, extendSelWord.bind(this.text))
+		this.sel.end(this.para, this.sym)
+//		var ax = wordLeft(this.text.L[this.para], this.sym)
 		var bx = wordRight(this.text.L[this.para], this.sym)
-		this.sel.start(this.para, ax)
 		this.sym = bx
-		this.sel.end(this.para, bx)
-		this.mouseSelecting = false
-		delete this.getDesktop().mouseCapture
+		this.mouseSelecting = true
 		return true
 	}
 	if (hand.button != undefined) {
@@ -484,23 +494,43 @@ TEdit.can.mouseSelect = function(hand, noGlobal) {
 			this.sel.start(this.para, this.sym)
 			this.mouseSelecting = true
 		} else {
-			if (this.mouseSelecting == true) {
-				if (A) this.para = A[0], this.sym = A[1], this.targetX = hand.x
-				else this.moveCursor('bottom')
-				this.sel.end(this.para, this.sym)
-				this.mouseSelecting = false
-			}
+			if (this.scrollTimer) clearInterval(this.scrollTimer)
+			if (this.mouseSelecting == true) this.mouseSelecting = false
 			delete this.getDesktop().mouseCapture
 		}
 		this.getDesktop().display.caretReset()
 		return true
 	} else {
 		if (this.mouseSelecting == true) {
-			if (hand.y < 0) this.lineScroll(-1), hand.y = 0
-			else if (hand.y >= this.h) this.lineScroll(1), hand.y = this.h - 1
-			var A = this.text.scrollToText(this.delta + hand.y, hand.x)
-			if (A) this.para = A[0], this.sym = A[1], this.targetX = hand.x
+			if (this.cacheMouse && this.cacheMouse.x == hand.x && this.cacheMouse.y == hand.y) return
+			this.cacheMouse = { x: hand.x, y: hand.y }
+
+			var overScroll = 0, me= this
+			if (hand.y < 0) overScroll = -1
+			else if (hand.y >= this.h) overScroll = 1
+			var Y = hand.y, X = hand.x
+			if (overScroll ==-1) Y = 0
+			if (overScroll == 1) Y = me.h - 1
+			
+			if (overScroll == 0) {
+				clearInterval(this.scrollTimer), this.scrollTimer = undefined
+			}
+			else { // Timer induced scrolling
+				me.lineScroll(overScroll)
+				if (this.scrollTimer) clearInterval(this.scrollTimer)
+				this.scrollTimer = setInterval(function() {
+					me.lineScroll(overScroll)
+					var A = me.text.scrollToText(me.delta + Y, X)
+					if (A) me.para = A[0], me.sym = A[1], me.targetX = X
+					me.sel.end(me.para, me.sym)
+					me.repaint()
+				}, 50)
+			}
+			
+			var A = this.text.scrollToText(this.delta + Y, X)
+			if (A) this.para = A[0], this.sym = A[1], this.targetX = X
 			this.sel.end(this.para, this.sym)
+				
 			return true
 		}
 	}
@@ -518,12 +548,16 @@ TEdit.can.onMouse = function(hand) {
 			this.getDesktop().mouseCapture = this.mouseSelect.bind(this)
 			this.mouseSelect(hand, true)
 		}
-	} else if (hand.button == 1) {
+	}
+	
+	else if (hand.button == 1) {
 		if (hand.down) {
 			this.getDesktop().mouseCapture = this.onCapture.bind(this)
 			return this.dragScroll('start', hand)
 		}
-	} else if (hand.button == 3) {
+	}
+	
+	else if (hand.button == 3) { 
 		var H = this.text.getHeight(), me = this
 		this.wheelSpeed = 3
 		for (var i = 0; i < this.wheelSpeed; i++) setTimeout(function() {
