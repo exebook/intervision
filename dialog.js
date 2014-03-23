@@ -148,10 +148,10 @@ messageBox = function(desktop, message, callback) {
 
 
 TInput = kindof(TEdit)
-TInput.init = function(text) {
+TInput.can.init = function(text) {
 	dnaof(this)
 	this.multiLine = false
-	this.text = text
+	this.setText(text)
 }
 
 // auto keyword list by appearance in this file + config with weights

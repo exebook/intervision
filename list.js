@@ -205,6 +205,11 @@ TList.can.onMouse = function(hand) {
 		this.sid = this.items.length - 1
 		return true
 	}
+	if  (hand.button == 3) {
+		if (hand.down) this.moveCursor('down')
+		else this.moveCursor('up')
+		return true
+	}
 }
 TList.can.onCursor = function(hand) {
 	if (button_state[0] != true) this.sliding = false

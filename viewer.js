@@ -100,6 +100,7 @@ TModalTextView.can.init = function(Desktop, fileName, viewClass, colors) {
 	this.scrollBar = TScrollBar.create(colors)
 	this.add(this.scrollBar)
 	this.viewer = viewClass.create(fileName)
+	this.viewer.pal = colors
 	this.add(this.viewer)
 	this.scrollBar.disabled = true
 	this.scrollBar.track = this.viewer.track.bind(this.viewer)

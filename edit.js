@@ -6,7 +6,7 @@ TEdit.can.init = function() {
 	this.L = []
 	this.name = 'TEdit'
 	this.multiLine = true
-	this.pal = getColor.syntaxWhite
+	this.pal = getColor.syntaxBlack
 	this.react(100, keycode['z'], this.commandUndo, {arg:'undo'})
 	this.react(101, keycode['z'], this.commandUndo, {arg:'redo'})
 
@@ -108,8 +108,10 @@ TEdit.can.draw = function(state) {
 		lines = this.text.getLines(this.delta, this.delta + this.h),
 		Y = this.delta, sel = this.sel.get(), selState,
 		match
-	if (sel && sel.a.y == sel.b.y) match = this.text.getSelText(this.sel)
-	if (this.match) match = this.match
+	if (this.multiLine == true) {
+		if (sel && sel.a.y == sel.b.y) match = this.text.getSelText(this.sel)
+		if (this.match) match = this.match
+	}
 	
 	if (sel) sel.a = this.text.textToScroll(sel.a.y, sel.a.x), sel.b = this.text.textToScroll(sel.b.y, sel.b.x)
 //	if (caret[1] == undefined) caret[1] = 0
@@ -141,7 +143,7 @@ TEdit.can.draw = function(state) {
 					(selState == 1 && X >= sel.a[1])
 				||	(selState == 2 && X >= sel.a[1] && X < sel.b[1]) 
 				||	(selState == 3 && X < sel.b[1])
-			) B = this.pal[2]
+			) B = this.pal[4]
 			if (char == '\t') {
 //				for (var f = 0; f < this.text.tab; f++) this.set(X+f, l, '-', F | 0xd000, B) // мож пригодится
 				this.set(X+1, l, '░', this.pal[0] | 0xa000, B | 0x0000)
@@ -151,7 +153,7 @@ TEdit.can.draw = function(state) {
 		if (line.last) { // show line end marker
 			B = this.pal[1]
 			var ch = ' '
-			if (sel && sel.a[0] <= Y && sel.b[0] > Y) B = this.pal[2], ch = '¶'
+			if (sel && sel.a[0] <= Y && sel.b[0] > Y) B = this.pal[4], ch = '¶'
 			this.set(line.w[line.s.length], l, ch, this.pal[0] | 0xa000, B)
 		}
 		Y++
@@ -369,6 +371,7 @@ TEdit.can.commandDeleteWordBack = function() {
 }
 
 TEdit.can.lineScroll = function(arg) {
+	if (this.multiLine != true) return false
 	var H = this.text.getHeight(), me = this
 	me.delta += arg
 	if (me.delta > H - me.h + 3) me.delta = H - me.h + 3
@@ -557,7 +560,7 @@ TEdit.can.onMouse = function(hand) {
 		}
 	}
 	
-	else if (hand.button == 3) { 
+	else if (hand.button == 3 && this.multiLine == true) { 
 		var H = this.text.getHeight(), me = this
 		this.wheelSpeed = 3
 		for (var i = 0; i < this.wheelSpeed; i++) setTimeout(function() {
@@ -635,6 +638,7 @@ TEdit.can.setText = function(s) {
 	this.sel.clear()
 	this.para = 0
 	this.sym = 0
+	if (this.text.L.length == 1) this.shiftSel('all')
 	this.moveCursor('bottom')
 	this.moveCursor('end')
 }
