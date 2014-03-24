@@ -1,4 +1,5 @@
 var objectID = 0
+var tag = 'СНРРССНВРДСВНЕМСС'
 
 TObject = kindof()
 
@@ -16,6 +17,7 @@ require('./list')
 require('./text')
 require('./edit')
 require('./viewer')
+require('./control')
 require('./dialog')
 require('./util')
 require('./tool')

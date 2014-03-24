@@ -1,55 +1,3 @@
-TControl = kindof(TView)
-TControl.can.init = function() {
-	dnaof(this)
-	this.name = 'TControl'
-}
-
-TButton = kindof(TControl)
-
-TButton.can.init = function(keycode, title, onClick) {
-	dnaof(this)
-	if (typeof keycode != 'number') {
-		log('Invalid Button: ', keycode, title, onClick)
-		throw ('invalid button')
-	}
-	this.name = 'TButton'
-	this.key = keycode
-	this.title = title
-	this.onClick = onClick
-	this.pal = getColor.button
-}
-
-TButton.can.draw = function() {
-	this.clear()
-	if (this.title != undefined) {
-		var title = ''
-		if (typeof this.title == 'string') title = this.title
-		if (typeof this.title == 'function') title = this.title()
-		this.print((this.w >> 1) - (title.length + 2 >> 1), 0, ' ' + title + ' ', this.pal[0], this.pal[1])
-	}
-}
-TButton.can.onMouse = function (hand) {
-	if (hand.down && hand.button == 0 && this.onClick != undefined) return this.onClick()
-}
-
-TLabel = kindof(TControl)
-TLabel.can.init = function(title) {
-	dnaof(this)
-	this.disabled = true
-	this.name = 'TLabel'
-	this.title = title
-	this.pal = getColor.dialog
-}
-TLabel.can.draw = function() {
-	this.clear()
-	if (this.title != undefined) {
-		var title = ''
-		if (typeof this.title == 'string') title = this.title
-		if (typeof this.title == 'function') title = this.title()
-		this.print(0, 0, title, this.pal[0], this.pal[1])
-	}
-}
-
 TDialog = kindof(TWindow)
 
 TDialog.can.init = function(W, H) {
@@ -103,6 +51,21 @@ TOkCancel.can.init = function(message) {
 	this.add(this.cancel, 10, 1)
 }
 
+TInputBox = kindof(TDialog)
+TInputBox.can.init = function(width, title, message, callback) {
+	dnaof(this, width, 1)
+	this.title = title
+	this.msg = TLabel.create(); this.msg.title = message + ':'
+	this.add(this.msg, 45, 1); this.addRow()
+	this.input = TInput.create(''); this.add(this.input, 45, 1); this.addRow(); this.addRow()
+	this.ok = TButton.create(keycode.ENTER, 'Создать', function() { this.close(); callback(); return true })
+	this.add(this.ok, 10, 1)
+	this.cancel = TButton.create(keycode.ESCAPE, 'Отмена', function() { this.close(); return true })
+	this.add(this.cancel, 10, 1)
+	this.size(this.w, this.addY + 3)
+	this.actor = this.input
+}
+
 TMessageBox = kindof(TDialog)
 TMessageBox.can.init = function() {
 	dnaof(this, 37, 8)
@@ -147,17 +110,7 @@ messageBox = function(desktop, message, callback) {
 }
 
 
-TInput = kindof(TEdit)
-TInput.can.init = function(text) {
-	dnaof(this)
-	this.multiLine = false
-	this.setText(text)
-}
-
 // auto keyword list by appearance in this file + config with weights
 
-editFileAlt = function(s) {
-	glxwin.sh_async('pluma '+ s)
-}
 
 
