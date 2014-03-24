@@ -12,15 +12,18 @@ fonts = [
 { name: '/y/yaui/glx/f/consola.ttf', extra_x: -1, tune_y: 0 },
 { name: '/y/yaui/glx/f/fixed7.ttf', extra_x: 0, tune_y: 0 },
 ]
-markerModified = 'x'
-var fontSize = 22
+
+var fontSize = 18
+
 function selectFirstAvailableFont() {
 	for (var i = 0; i < fonts.length; i++) if (fs.existsSync(fonts[i].name)) return i
 	return -1
 }
 
-//var f = selectFirstAvailableFont()
-var f = 3
+var f = selectFirstAvailableFont()
+//var f = 0
+
+markerModified = 'x'
 
 function renderView(win, view, atx, aty) {
 	var TEXT = [], COLOR = []

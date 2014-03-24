@@ -127,6 +127,7 @@ TDesktop.can.showModal = function(d, x, y, w, h) {
 	d.repaint()
 }
 TDesktop.can.hideModal = function() {
+	if (this.modal.onHide) this.modal.onHide()
 	this.remove(this.modal)
 	this.modal = undefined
 	this.actor = this.actors.pop()

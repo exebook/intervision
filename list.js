@@ -142,6 +142,7 @@ TList.can.draw = function(state, customDraw) {
 	if (this.items == undefined) return
 	var y = 0, cy = 0, x = 0, cw = ((this.w - (this.columns-1)) / this.columns), c = 0
 	var i = this.d
+	var showFocusedItem = (state.focused || this.showFocused == true)
 	this.column_x = [0]
 	while (true) {
 		if (y >= this.h * this.columns) break
@@ -154,7 +155,7 @@ TList.can.draw = function(state, customDraw) {
 		}
 		if (i < this.items.length) {
 			var B = undefined
-			var itemFocused = (i == this.sid && state.focused)
+			var itemFocused = (i == this.sid && showFocusedItem)
 			var itemSelected = (this.items[i].selected != undefined && this.items[i].selected)
 			if (customDraw != undefined) { if (customDraw(this.items[i], Math.floor(x), cy, Math.floor(cw), itemFocused) == true) break }
 			else if (this.drawItem({

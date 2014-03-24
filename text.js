@@ -1,8 +1,10 @@
 TSelection = kindof(TObject)
 TSelection.can.init = function() {
 	var data = undefined
+	this._data = data// for debug
 	function sort() { with (data) {
-		if ((a.y > b.y) || (a.y == b.y && a.x > b.x)) s = { a: { x: data.b.x, y: data.b.y}, b: {x: data.a.x, y: data.a.y} }
+		if ((a.y > b.y) || (a.y == b.y && a.x > b.x))
+			s = { a: { x: data.b.x, y: data.b.y}, b: {x: data.a.x, y: data.a.y} }
 		else s = { b: { x: data.b.x, y: data.b.y}, a: {x: data.a.x, y: data.a.y} }
 		return s
 	}}
@@ -28,8 +30,9 @@ TSelection.can.init = function() {
 		return false
 	}
 	this.start = function(y, x, ender) {
-		this.ender =ender
+		this.ender = ender
 		data = { a: { x:x, y:y }}
+		this._data = data
 	}
 	this.end = function(y, x) {
 		if (data == undefined) return

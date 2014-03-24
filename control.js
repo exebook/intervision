@@ -58,3 +58,20 @@ TInput.can.init = function(text) {
 	this.multiLine = false
 	this.setText(text)
 }
+
+TDoneBar = kindof(TView)
+TDoneBar.can.init = function() {
+	dnaof(this)
+	this.pos = 0, this.max = 100
+	//'█▒▓░▍▌'
+}
+
+TDoneBar.can.draw = function(state) {
+	dnaof(this, state)
+	var X = (this.max / this.w)
+	if (X == 0) return
+	X = Math.round(this.pos / X)
+	this.rect(X, 0, this.w, 1, '░', 0xaaa, 0x888, 0x0)
+	this.rect(0, 0, X, 1, ' ', this.pal[1], this.pal[0]) //█
+}
+

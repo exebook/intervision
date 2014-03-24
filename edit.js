@@ -324,8 +324,8 @@ TEdit.can.commandLineDelete = function() { with (this) {
 }}
 
 TEdit.can.deleteSelected = function () {
-	this.text.deleteText(this.sel)
 	var A = this.sel.get().a
+	this.text.deleteText(this.sel)
 	this.sel.clear()
 	this.para = A.y
 	this.sym = A.x
@@ -638,8 +638,12 @@ TEdit.can.setText = function(s) {
 	this.sel.clear()
 	this.para = 0
 	this.sym = 0
-	if (this.text.L.length == 1) this.shiftSel('all')
-	this.moveCursor('bottom')
-	this.moveCursor('end')
+	if (this.text.L.length == 1) {
+		this.shiftSel('all')
+		this.sym = s.length
+	} else {
+		this.moveCursor('bottom')//will it work in TEdit.create(text)?
+		this.moveCursor('end')
+	}
 }
 
