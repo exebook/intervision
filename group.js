@@ -106,6 +106,7 @@ TDesktop.can.init = function() {
 	dnaof(this)
 	this.name = 'TDesktop'
 	this.actors = []
+	this.modals = []
 }
 TDesktop.can.getDesktop = function() {
 	return this
@@ -123,13 +124,14 @@ TDesktop.can.showModal = function(d, x, y, w, h) {
 	d.pos(x, y)
 	this.actors.push(this.actor)
 	this.add(d)
+	this.modals.push(this.modal)
 	this.modal = d
 	d.repaint()
 }
 TDesktop.can.hideModal = function() {
 	if (this.modal.onHide) this.modal.onHide()
 	this.remove(this.modal)
-	this.modal = undefined
+	this.modal = this.modals.pop()
 	this.actor = this.actors.pop()
 	this.clear()
 }

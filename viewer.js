@@ -105,11 +105,26 @@ TModalTextView.can.init = function(Desktop, fileName, viewClass, colors) {
 	this.scrollBar.disabled = true
 	this.scrollBar.track = this.viewer.track.bind(this.viewer)
 	this.scrollBar.pal = [this.viewer.pal[0], this.viewer.pal[1]]
-	this.react(0, keycode.ESCAPE, this.close)
+	this.react(0, keycode.ESCAPE, this.closePrompt)
 	this.actor = this.viewer
 	var syntax = colors
 	this.pal = [syntax[0], syntax[1], syntax[2], syntax[3]]//colors
 	this.fileName = fileName
+}
+
+TModalTextView.can.closePrompt = function() {
+	if (this.viewer.isModified == undefined) return this.close() // not an edit
+	var me = this
+	if (this.viewer.isModified()) {
+		var win = TOkCancel.create('Файл изменён, выйти без сохранения?', function() {
+			me.close()
+		})
+		this.getDesktop().showModal(win)
+	} else {
+		this.viewer.savePosState()
+		this.close()
+	}
+	return true
 }
 
 TModalTextView.can.loadFile = function() {
@@ -128,10 +143,11 @@ TModalTextView.can.draw = function(state) {
 	dnaof(this, state)
 	if (this.viewer.isModified) {
 		var B = this.pal[1] | 0x1000, F = this.pal[0]
-		if (this.viewer.isModified()) this.print(2, this.h-1, ' '+markerModified+' ', F, B); else this.print(2, this.h-1, '   ', undefined, B)
+		if (this.viewer.isModified()) this.print(2, this.h-1, ' '+markerModified+' ', F, B);
+		else this.print(2, this.h-1, '   ', undefined, B)
+		this.print(7, this.h-1, ' ' + this.viewer.para + ':' + this.viewer.sym +' ', this.pal[0], this.pal[1])
 	}
 }
-
 
 var filePositions = []
 function findFileMem(name) {
@@ -147,16 +163,25 @@ TFileEdit.can.init = function(fileName) {
 	this.fileName = fileName
 	this.text.setText(fs.readFileSync(fileName).toString())
 	var N = findFileMem(fileName)
-	if (N) this.para = N.para, this.sym = N.sym
+	if (N) {
+		this.para = N.para, this.sym = N.sym, this.delta = N.delta
+		if (this.para >= this.text.L.length - 1) this.para = this.text.L.length - 1, this.sym = 0
+	}
 	this.react(0, keycode.F2, this.save)
 	this.react(100, keycode['s'], this.save)
+}
+
+TFileEdit.can.savePosState = function() {
+	var N = findFileMem(this.fileName)
+	if (N) {
+		N.para = this.para, N.sym = this.sym, N.delta = this.delta
+	} else filePositions.push({name: this.fileName, para: this.para, sym: this.sym, delta: this.delta})
 }
 
 TFileEdit.can.save = function() {
 	fs.writeFileSync(this.fileName, this.text.getText())
 	this.text.modified = false
-	var N = findFileMem(this.fileName)
-	if (!N) filePositions.push({name: this.fileName, para: this.para, sym: this.sym})
+	this.savePosState()
 	return true
 }
 

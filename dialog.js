@@ -31,21 +31,21 @@ TDialog.can.onKey = function(K) {
 }
 
 TOkCancel = kindof(TDialog)
-TOkCancel.can.init = function(message) {
-	dnaof(this, 37, 8)
-	this.msg = TLabel(message)
+TOkCancel.can.init = function(message, callbackOk, callbackCancel) {
+	dnaof(this, message.length + 14, 8)
+	this.msg = TLabel.create(message)
 	this.add(this.msg, message.length, 1)
 	this.addRow()
 	var me = this
-	this.ok = TButton.create(36, 'Ладно', function() {
-		log('you clicked Button1')
+	this.ok = TButton.create(keycode.ENTER, 'Ладно', function() {
 		me.close()
+		if (callbackOk) callbackOk()
 		return true
 	})
 	this.add(this.ok, 10, 1)
-	this.cancel = TButton.create(9, 'Отмена', function() {
-		log('you clicked Cancel')
+	this.cancel = TButton.create(keycode.ESCAPE, 'Отмена', function() {
 		me.close()
+		if (callbackCancel) callbackCancel()
 		return true
 	})
 	this.add(this.cancel, 10, 1)
@@ -54,11 +54,13 @@ TOkCancel.can.init = function(message) {
 TInputBox = kindof(TDialog)
 TInputBox.can.init = function(width, title, message, callback) {
 	dnaof(this, width, 1)
+	var me = this
 	this.title = title
 	this.msg = TLabel.create(); this.msg.title = message + ':'
-	this.add(this.msg, 45, 1); this.addRow()
-	this.input = TInput.create(''); this.add(this.input, 45, 1); this.addRow(); this.addRow()
-	this.ok = TButton.create(keycode.ENTER, 'Создать', function() { this.close(); callback(); return true })
+	this.add(this.msg, width - 10, 1); this.addRow()
+	this.input = TInput.create(''); this.add(this.input, width - 10, 1); this.addRow(); this.addRow()
+	this.ok = TButton.create(keycode.ENTER, 'Создать', function() { 
+		me.close(); callback(me.input.getText()); return true })
 	this.add(this.ok, 10, 1)
 	this.cancel = TButton.create(keycode.ESCAPE, 'Отмена', function() { this.close(); return true })
 	this.add(this.cancel, 10, 1)
@@ -92,6 +94,7 @@ TMessageBox.can.init = function() {
 messageBox = function(desktop, message, callback) {
 	message = '   ' + message + '   '
 	var $ = TDialog.create(message.length + 10, 8)
+	$.title = 'К сведению'
 	$.callback = callback
 	$.addRow();
 	$.msg = TLabel.create(); $.msg.title = message; $.add($.msg, message.length, 1); $.addRow();$.addRow();

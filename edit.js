@@ -21,6 +21,12 @@ TEdit.can.init = function() {
 	this.react(1, keycode.DELETE, this.userCut)
 	this.react(100, keycode['d'], this.commandLineDelete)
 	this.react(0, keycode.ENTER, this.commandEnter)
+	this.react(100, keycode['g'], this.commandGoToLine)
+	this.react(100, keycode['f'], this.commandFind)
+	this.react(100, keycode['l'], this.commandFindNext)
+	this.react(101, keycode['l'], this.commandFindPrev)
+	this.react(0, keycode.F3, this.commandFindNext)
+	this.react(1, keycode.F3, this.commandFindPrev)
 
 	this.react(0, keycode.TAB, this.commandTab, { arg: 'indent' } )
 	this.react(1, keycode.TAB, this.commandTab, { arg: 'unindent' } )
@@ -147,8 +153,9 @@ TEdit.can.draw = function(state) {
 				||	(selState == 3 && X < sel.b[1])
 			) B = this.pal[4]
 			if (char == '\t') {
-//				for (var f = 0; f < this.text.tab; f++) this.set(X+f, l, '-', F | 0xd000, B) // мож пригодится
-				this.set(X+1, l, '░', this.pal[0] | 0xa000, B | 0x0000)
+//				for (var f = 0; f < this.text.tab; f++) this.set(X+f, l, '-', F | 0xd000, B) 
+				// мож пригодится
+				this.print(X, l, '   ', this.pal[0] | 0xa000, B | 0x0000) //'░'
 			}
 			else this.set(X, l, char, F, B), px++
 		}
@@ -339,7 +346,7 @@ TEdit.can.commandDelete = function () {
 		this.sel.start(this.para, this.sym)
 		this.moveCursor('right')
 		this.sel.end(this.para, this.sym)
-		if (this.sel.clean()) return false
+		if (this.sel.clean()) return true
 	}
 	this.deleteSelected()
 	this.scrollToView()
@@ -375,9 +382,13 @@ TEdit.can.commandDeleteWordBack = function() {
 TEdit.can.lineScroll = function(arg) {
 	if (this.multiLine != true) return false
 	var H = this.text.getHeight(), me = this
+	var oldDelta = me.delta
 	me.delta += arg
 	if (me.delta > H - me.h + 3) me.delta = H - me.h + 3
 	if (me.delta < 0) me.delta = 0
+	if (me.delta != oldDelta) {
+		if (arg < 0) this.moveCursor('up'); else this.moveCursor('down')
+	}
 	this.getDesktop().display.caretReset()
 	return true
 }
@@ -602,6 +613,7 @@ TEdit.can.commandTab = function(arg) {
 		}
 		var S = this.sel.get()
 		this.text.undoBegin()
+		if (S.b.x == 0) S.b.y--
 		for (var y = S.a.y; y <= S.b.y; y++) {
 			this.text.insertTextAt('\t', y, 0)
 		}
@@ -614,6 +626,7 @@ TEdit.can.commandTab = function(arg) {
 		} else {
 			var S = this.sel.get()
 			a = S.a.y, b = S.b.y
+			if (S.b.x == 0) b--
 		}
 		var L = this.text.L
 		this.text.undoBegin()
@@ -623,8 +636,8 @@ TEdit.can.commandTab = function(arg) {
 			if (L[y][0] == '\t') 
 				this.text.deleteText(T)
 		}
-		this.para = a
-		this.sym = 0
+//		this.para = a
+//		this.sym = 0
 		this.text.undoEnd()
 	}
 	this.getDesktop().display.caretReset()
@@ -649,3 +662,78 @@ TEdit.can.setText = function(s) {
 	}
 }
 
+TEdit.can.commandGoToLine = function() {
+	var me = this
+	var win = TInputBox.create(45, 'Переход', 'Номер строки', function(text) {
+		me.para = parseInt(text)
+		if (me.para > me.text.L.length - 1) me.para = me.text.L.length - 1
+		me.sym = 0
+		me.scrollToView()
+	})
+	this.getDesktop().showModal(win)
+	return true
+}
+
+TEdit.can.commandFindNext = function() {
+	var me = this
+	var t = me.text.L, c = t.length, match
+	for (var p = me.para + 1; p < c; p++) {
+		var sym = t[p].indexOf(me.textToFind)
+		if (sym >= 0) {
+			match = { para:p, sym: sym }
+			break
+		}
+	}
+	if (match == undefined) for (var p = 0; p <= me.para; p++) {
+		var sym = t[p].indexOf(me.textToFind)
+		if (sym >= 0) {
+			match = { para:p, sym: sym }
+			break
+		}
+	}
+	if (match) {
+		me.para = match.para, me.sym = match.sym
+		me.sel.start(me.para, me.sym)
+		me.sel.end(me.para, me.sym + me.textToFind.length)
+		me.scrollToView()
+		this.getDesktop().display.caretReset()
+	}
+	return true
+}
+
+TEdit.can.commandFindPrev = function() {
+	var me = this
+	var t = me.text.L, c = t.length, match
+	for (var p = me.para - 1; p >= 0; p--) {
+		var sym = t[p].indexOf(me.textToFind)
+		if (sym >= 0) {
+			match = { para:p, sym: sym }
+			break
+		}
+	}
+	if (match == undefined) for (var p = c - 1; p >= me.para; p--) {
+		var sym = t[p].indexOf(me.textToFind)
+		if (sym >= 0) {
+			match = { para:p, sym: sym }
+			break
+		}
+	}
+	if (match) {
+		me.para = match.para, me.sym = match.sym
+		me.sel.start(me.para, me.sym)
+		me.sel.end(me.para, me.sym + me.textToFind.length)
+		me.scrollToView()
+		this.getDesktop().display.caretReset()
+	}
+	return true
+}
+
+TEdit.can.commandFind = function() {
+	var me = this
+	var win = TInputBox.create(45, 'Поиск', 'Искомое', function(text) {
+		me.textToFind = text
+		me.commandFindNext()
+	})
+	this.getDesktop().showModal(win)
+	return true
+}

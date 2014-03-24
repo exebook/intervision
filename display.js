@@ -10,7 +10,7 @@ fonts = [
 { name: '/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf',  extra_x: 0, tune_y: -1 },
 { name: '/usr/share/fonts/truetype/ttf-liberation/LiberationMono-Regular.ttf', extra_x: 0, tune_y: -1 },
 { name: '/y/yaui/glx/f/consola.ttf', extra_x: -1, tune_y: 0 },
-{ name: '/home/ya/.deodar/fixed7.ttf', extra_x: 1, tune_y: 0 },
+{ name: '/home/ya/.deodar/fixed7.ttf', extra_x: 1, tune_y: -1 },
 ]
 
 var fontSize = 21
