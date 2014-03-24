@@ -10,10 +10,10 @@ fonts = [
 { name: '/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf',  extra_x: 0, tune_y: -1 },
 { name: '/usr/share/fonts/truetype/ttf-liberation/LiberationMono-Regular.ttf', extra_x: 0, tune_y: -1 },
 { name: '/y/yaui/glx/f/consola.ttf', extra_x: -1, tune_y: 0 },
-{ name: '/y/yaui/glx/f/fixed7.ttf', extra_x: 0, tune_y: 0 },
+{ name: '/home/ya/.deodar/fixed7.ttf', extra_x: 1, tune_y: 0 },
 ]
 
-var fontSize = 18
+var fontSize = 21
 
 function selectFirstAvailableFont() {
 	for (var i = 0; i < fonts.length; i++) if (fs.existsSync(fonts[i].name)) return i
@@ -21,7 +21,7 @@ function selectFirstAvailableFont() {
 }
 
 var f = selectFirstAvailableFont()
-//var f = 0
+var f = 9
 
 markerModified = 'x'
 

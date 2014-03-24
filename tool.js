@@ -130,6 +130,7 @@ TDriveMenu.can.init = function(panel) {
 	this.react(0, keycode.ESCAPE, this.close)
 	this.react(0, keycode.ENTER, this.onEnter)
 }
+
 TDriveMenu.can.pathSelect = function (item) {
 	this.close()
 	if (typeof item.onSelect == 'function') item.onSelect.apply(this.panel)
@@ -147,6 +148,7 @@ TDriveMenu.can.pathSelect = function (item) {
 	if (item.root == true) this.panel.root = item
 	this.panel.list.reload()
 }
+
 TDriveMenu.can.onEnter = function() {
 	this.pathSelect(this.list.items[this.list.sid])
 }

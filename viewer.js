@@ -133,11 +133,21 @@ TModalTextView.can.draw = function(state) {
 }
 
 
+var filePositions = []
+function findFileMem(name) {
+	for (var i = 0; i < filePositions.length; i++) {
+		var N = filePositions[i]
+		if (N.name == name) return N
+	}
+}
+
 TFileEdit = kindof(TEdit)
 TFileEdit.can.init = function(fileName) {
 	dnaof(this)
 	this.fileName = fileName
 	this.text.setText(fs.readFileSync(fileName).toString())
+	var N = findFileMem(fileName)
+	if (N) this.para = N.para, this.sym = N.sym
 	this.react(0, keycode.F2, this.save)
 	this.react(100, keycode['s'], this.save)
 }
@@ -145,6 +155,8 @@ TFileEdit.can.init = function(fileName) {
 TFileEdit.can.save = function() {
 	fs.writeFileSync(this.fileName, this.text.getText())
 	this.text.modified = false
+	var N = findFileMem(this.fileName)
+	if (!N) filePositions.push({name: this.fileName, para: this.para, sym: this.sym})
 	return true
 }
 
