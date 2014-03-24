@@ -1,3 +1,5 @@
+clipboardData = ''
+
 TEdit = kindof(TView)
 
 TEdit.can.init = function() {
@@ -60,7 +62,7 @@ TEdit.can.init = function() {
 	this.react(101, keycode.RIGHT, this.shiftSel, {arg:'wordright'})
 	this.react(101, keycode.PAGE_UP, this.shiftSel, {arg:'top'})
 	this.react(101, keycode.PAGE_DOWN, this.shiftSel, {arg:'bottom'})
-	this.clipboardData = '<abc\ncde>'
+//	this.clipboardData = '<abc\ncde>'
 //	this.sel.start(0, 0)
 //	this.sel.end(0, 0)
 }
@@ -414,16 +416,16 @@ TEdit.can.insertText = function (txt) {
 }
 
 TEdit.can.userCopy = function() {
-	this.clipboardData = this.text.getSelText(this.sel)
+	clipboardData = this.text.getSelText(this.sel)
 	return true
 }
 
 TEdit.can.userPaste = function() {
-	return this.insertText(this.clipboardData)
+	return this.insertText(clipboardData)
 }
 
 TEdit.can.userCut = function() {
-	this.clipboardData = this.text.getSelText(this.sel)
+	clipboardData = this.text.getSelText(this.sel)
 	this.deleteSelected()
 	this.scrollToView()
 	this.getDesktop().display.caretReset()
