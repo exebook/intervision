@@ -653,7 +653,16 @@ TEdit.can.unindentWith = function(sub) {
 }
 
 TEdit.can.commandComment = function(arg) {
-	if (arg == 'comment') this.indentWith('//')
+	//TODO: сделать '//' переменной настроек
+	if (arg == 'comment') {
+		if (this.sel.clean()) {
+			var last = this.text.L.length - 1
+			if (this.para != last || this.text.L[last].substr(0, 2) != '//')
+			this.text.insertTextAt('//', this.para, 0)
+			if (this.para != last) this.moveCursor('down')
+		} else
+			this.indentWith('//')
+	}
 	if (arg == 'uncomment') this.unindentWith('//')
 	this.getDesktop().display.caretReset()
 	return true

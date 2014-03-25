@@ -53,7 +53,7 @@ fixSize = function(view, x, y, w, h, depth) {
 
 var TDeodar = kindof(TGLXVision)
 TDeodar.can.init = function() {
-	dnaof(this)
+	dnaof(this, TDesktop, 80, 20)
 	addSplit(this.desktop, false, 0)
 }
 TDeodar.can.onSize = function(w, h) {
