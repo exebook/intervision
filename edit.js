@@ -25,6 +25,8 @@ TEdit.can.init = function() {
 	this.react(100, keycode['f'], this.commandFind)
 	this.react(100, keycode['l'], this.commandFindNext)
 	this.react(101, keycode['l'], this.commandFindPrev)
+	this.react(101, keycode['c'], this.commandComment, {arg:'comment'})
+	this.react(101, keycode['x'], this.commandComment, {arg:'uncomment'})
 	this.react(0, keycode.F3, this.commandFindNext)
 	this.react(1, keycode.F3, this.commandFindPrev)
 
@@ -427,7 +429,8 @@ TEdit.can.insertText = function (txt) {
 }
 
 TEdit.can.userCopy = function() {
-	clipboardData = this.text.getSelText(this.sel)
+	var s = this.text.getSelText(this.sel)
+	if (s.length > 0) clipboardData = s
 	return true
 }
 
@@ -605,41 +608,66 @@ TEdit.can.track = function() {
 	return { size: this.text.getHeight() - this.h + 3, pos: this.delta }
 }
 
+TEdit.can.indentWith = function(sub) {
+	var S = this.sel.get(), Y = S.b.y
+	this.text.undoBegin()
+	if (S.b.x == 0) Y--
+	for (var y = S.a.y; y <= Y; y++) {
+		this.text.insertTextAt(sub, y, 0)
+	}
+	var mova = 0, movb = 0
+	if (S.a.x > 0) mova = sub.length
+	if (S.b.x > 0) movb = sub.length
+	this.sel.start(S.a.y, S.a.x + mova)
+	this.sel.end(S.b.y, S.b.x + movb)
+	this.text.undoEnd()
+}
+
+TEdit.can.unindentWith = function(sub) {
+	var a, b
+	if (this.sel.clean()) {
+		a = this.para, b = a
+	} else {
+		var S = this.sel.get()
+		a = S.a.y, b = S.b.y
+		if (S.b.x == 0) b--
+	}
+	var L = this.text.L
+	this.text.undoBegin()
+	var T = TSelection.create(), mova = 0, movb = 0
+	for (var y = a; y <= b; y++) {
+		if (L[y].substr(0, sub.length) == sub) {
+			if (y == a) mova = sub.length
+			if (y == b) movb = sub.length
+			T.start(y, 0), T.end(y, sub.length)
+			this.text.deleteText(T)
+		}
+	}
+	this.text.undoEnd()
+	if (S) {
+		if (S.a.x < mova) mova = 0
+		if (S.b.x < movb) movb = 0
+		this.sel.start(S.a.y, S.a.x - mova)
+		this.sel.end(S.b.y, S.b.x - movb)
+	}
+}
+
+TEdit.can.commandComment = function(arg) {
+	if (arg == 'comment') this.indentWith('//')
+	if (arg == 'uncomment') this.unindentWith('//')
+	this.getDesktop().display.caretReset()
+	return true
+}
+
 TEdit.can.commandTab = function(arg) {
 	if (arg == 'indent') {
 		if (this.sel.clean()) {
 			this.insertText('\t')
 			return true
 		}
-		var S = this.sel.get()
-		this.text.undoBegin()
-		if (S.b.x == 0) S.b.y--
-		for (var y = S.a.y; y <= S.b.y; y++) {
-			this.text.insertTextAt('\t', y, 0)
-		}
-		this.text.undoEnd()
+		this.indentWith('\t')
 	}
-	if (arg == 'unindent') {
-		var a, b
-		if (this.sel.clean()) {
-			a = this.para, b = a
-		} else {
-			var S = this.sel.get()
-			a = S.a.y, b = S.b.y
-			if (S.b.x == 0) b--
-		}
-		var L = this.text.L
-		this.text.undoBegin()
-		var T = TSelection.create()
-		for (var y = a; y <= b; y++) {
-			T.start(y, 0), T.end(y, 1)
-			if (L[y][0] == '\t') 
-				this.text.deleteText(T)
-		}
-//		this.para = a
-//		this.sym = 0
-		this.text.undoEnd()
-	}
+	if (arg == 'unindent') this.unindentWith('\t')
 	this.getDesktop().display.caretReset()
 	return true
 }
