@@ -44,7 +44,10 @@ TWindow.can.drawFrame = function(state, x, y, w, h) {
 		var title = ''
 		if (typeof this.title == 'string') title = this.title
 		if (typeof this.title == 'function') title = this.title.apply(this)
-		if (title.length > this.w) title = title.substr(title.length - this.w, this.w)
+		if (title.length > this.w - 6) {
+			if (this.titleFit) title = this.titleFit(title, this.w - 6)
+			else title = title.substr(title.length - this.w - 4, this.w - 4)
+		}
 		if (state.active) { F = this.pal[2], B = this.pal[3] }
 		this.print((this.w >> 1) - (title.length + 2 >> 1), y, ' '+title+' ', F, B)
 	}

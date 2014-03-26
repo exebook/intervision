@@ -158,7 +158,7 @@ TEdit.can.draw = function(state) {
 					(selState == 1 && X >= sel.a[1])
 				||	(selState == 2 && X >= sel.a[1] && X < sel.b[1]) 
 				||	(selState == 3 && X < sel.b[1])
-			) B = this.pal[4]
+			) B = this.pal[4], F = this.pal[P + 4]
 			if (char == '(') { F = this.pal[keyw+braceLevel], braceLevel++ }
 			else if (char == ')') { if (braceLevel > 0) braceLevel--, F = this.pal[keyw+braceLevel] }
 			else if (char == '{') { F = this.pal[keyw+curlyLevel], curlyLevel++ }

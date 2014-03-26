@@ -279,4 +279,11 @@ TList.can.scrollIntoView = function() { with(this) {
 	}
 }}
 
+TList.can.onKey = function(K) {
+	if (K.mod.alt && K.char!= undefined) {
+		if (this.onAltChar) this.onAltChar(K)
+		return true
+	}
+	return dnaof(this, K)
+}
 '│─┴'

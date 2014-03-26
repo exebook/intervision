@@ -1,11 +1,9 @@
 var fs = require('fs')
 fonts = [
 { name: '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono.ttf', extra_x: 0, tune_y: 0 },
-{ name: '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono-Bold.ttf', extra_x: 0, tune_y: 0 },
-{ name: '/usr/share/fonts/truetype/tlwg/TlwgTypewriter.ttf'},
-{ name: '/usr/share/fonts/truetype/freefont/FreeMono.ttf', extra_x: 0, tune_y: -1 },
+{ name: '/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', extra_x: 0, tune_y: -1 },
 //{ name: '', extra_x: 0, tune_y: 0 },
-{ name: '/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf', extra_x: 0, tune_y: -1 },
+{ name: '/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf', extra_x: 0, tune_y: 0 },
 { name: '/usr/share/fonts/truetype/msttcorefonts/Andale_Mono.ttf', extra_x: 0, tune_y: -1 },
 { name: '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono-Oblique.ttf', extra_x: 0, tune_y: -1 },
 { name: '/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf',  extra_x: 0, tune_y: -1 },
@@ -22,8 +20,8 @@ function selectFirstAvailableFont() {
 }
 
 var f = selectFirstAvailableFont()
-var f = 10
-//fontSize = 15, f = 0
+var f = 8
+//fontSize = 18, f = 2
 
 markerModified = 'x'
 
@@ -43,17 +41,6 @@ function renderView(win, view, atx, aty) {
 		}
 	}
 	win.colorText(atx, aty, view.w, view.h, TEXT, COLOR)
-/*	if (this.caretDisabled != true && this.caretFlash && view.caret != undefined) {
-			if (this.caretVertical)
-			native_crect(this.handle,
-				view.caret.x * this.fnt[0], view.caret.y * this.fnt[1],                   // vertical
-				view.caret.x * this.fnt[0] + 2, view.caret.y * this.fnt[1] + this.fnt[1],
-				0xdd00ffff)
-			else native_crect(this.handle,
-				view.caret.x * this.fnt[0], view.caret.y * this.fnt[1] + this.fnt[1] - 3,   // horizontal
-				view.caret.x * this.fnt[0] + this.fnt[0], view.caret.y * this.fnt[1] + this.fnt[1],
-				0xdd00ffff)
-		}*/
 }
 
 

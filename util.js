@@ -24,6 +24,30 @@ compressFileName = function(s, w) {
 	return s
 }
 
+pathCompress = function(s, w) {
+	if (s.length <= w) return s
+	var x = s.length, L = []
+	s = s.split('/')
+	for (var i = 0; i < s.length; i++) L.push(s[i].length)
+	while (x > w) {
+		var long = 0, lid = -1
+		for (var i = 0; i < s.length; i++) if (L[i] >= long) long = L[i], lid = i
+		L[lid]--, x--
+	}
+	for (var i = 0; i < s.length; i++) {
+		var q = s[i].length != L[i]
+		if (q) {
+			s[i] = '~' + s[i].substr(s[i].length - L[i] + 1, w)
+		}
+	}
+	return s.join('/')
+}
+//var s = 'abcdef'
+//s = '~' + s.substr(s.length - 3 + 1, 6)
+//log(s)
+//
+//process.exit()
+
 readableSize = function(x, bytes) {
 	var kb = ['',' Кб',' Мб',' Гб',' Тб']
 	if (bytes != undefined) kb[0] = bytes

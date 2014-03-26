@@ -51,7 +51,7 @@ deleteString = function(str, from, to) {
 function charType(ch) {
 	var type = 0
 //	if ((' \t').indexOf(ch) >= 0) type = 1
-	if ((' \t`~!@#$%^&*()_-+={[}]|\"\':;?/>.<,').indexOf(ch) >= 0) type = 2
+	if ((' \t`~!@#$%^&*()-+={[}]|\"\':;?/>.<,').indexOf(ch) >= 0) type = 2
 	if (('0123456789').indexOf(ch) >= 0) type = 3
 	return type
 }
@@ -90,7 +90,7 @@ wordRight = function(s, X) {
 	return x
 }
 var idCharHash = {}
-var idChars = 'qazwsxedcrfvtgbyhnujmikolpQAZWSXEDCRFVTG'
+var idChars = '_qazwsxedcrfvtgbyhnujmikolpQAZWSXEDCRFVTG'
 	+'BYHNUJMIKOLP1234567890йцукен'
 	+'гшщзхъёфывапролджэячсмить'
 	+'бюЁЙЦУКЕНГШЩЗХЪФЫВАПР'
@@ -232,6 +232,7 @@ TText.can.textToScroll = function(para, pos) {
 TText.can.deleteText = function (sel) {
 	var A = sel.get()
 	if (A == undefined) return
+	this.alertChange()
 	this.modified = true
 	var B = A.b
 	A = A.a
@@ -280,6 +281,7 @@ TText.can.insertTextAt = function(txt, para, sym) {
 		text:  this.L[para],
 		before: [para, sym], after: [para, sym + txt.length],
 	}); else U.after = [para, sym + txt.length]
+	this.alertChange()
 	if (T.length == 1) {
 		this.L[para] = a + T + b
 		return { para: para, sym: sym + txt.length}
@@ -382,5 +384,13 @@ TText.can.undoAction = function(L, R) {
 			ret = A.after
 		}
 	}
+	this.alertChange()
 	return ret
+}
+
+TText.can.alertChange = function() {
+	if (this.onChange) {
+		if (this.changeTimeout) clearTimeout(this.changeTimeout)
+		this.changeTimeout = setTimeout(this.onChange, 10)
+	}
 }
