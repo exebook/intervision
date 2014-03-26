@@ -139,13 +139,16 @@ TModalTextView.can.size = function(W, H) {
 	this.scrollBar.pos(W - 2, 1)
 }
 
+linesCountStart = 1
+symCountStart = 1
+
 TModalTextView.can.draw = function(state) {
 	dnaof(this, state)
 	if (this.viewer.isModified) {
 		var B = this.pal[1] | 0x1000, F = this.pal[0]
 		if (this.viewer.isModified()) this.print(2, this.h-1, ' '+markerModified+' ', F, B);
 		else this.print(2, this.h-1, '   ', undefined, B)
-		this.print(7, this.h-1, ' ' + this.viewer.para + ':' + this.viewer.sym +' ', this.pal[0], this.pal[1])
+		this.print(7, this.h-1, ' ' + (this.viewer.para+linesCountStart) + ':' + (this.viewer.sym+symCountStart) +' ', this.pal[0], this.pal[1])
 	}
 }
 

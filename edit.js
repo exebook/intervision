@@ -1,4 +1,8 @@
-clipboardData = ''
+if (typeof clipboardSet == 'undefined') {
+	clipboardData = ''
+	clipboardSet = function (s) { clipboardData = s }
+	clipboardGet = function () { return clipboardData }
+}
 
 TEdit = kindof(TView)
 
@@ -127,6 +131,7 @@ TEdit.can.draw = function(state) {
 //	if (caret[1] == undefined) caret[1] = 0
 	if (state.focused && caret) F = this.pal[2], this.caret = { x: caret[1], y: caret[0] - this.delta, color: this.pal[0] }
 	else delete this.caret
+	var braceLevel = 0, curlyLevel = 0
 	for (var l = 0; l < lines.length; l++) {
 		var line = lines[l]
 		if (match) colorizeMatch(line, match)
@@ -140,7 +145,7 @@ TEdit.can.draw = function(state) {
 		}
 		var px = 0
 		if (match) colorizeMatch(line, match, -1)
-
+		var lineComment = false, keyw = 4
 		for (var x = 0; x < line.s.length; x++) {
 			B = this.pal[1]
 			var X = line.w[x]
@@ -154,11 +159,13 @@ TEdit.can.draw = function(state) {
 				||	(selState == 2 && X >= sel.a[1] && X < sel.b[1]) 
 				||	(selState == 3 && X < sel.b[1])
 			) B = this.pal[4]
-			if (char == '\t') {
-//				for (var f = 0; f < this.text.tab; f++) this.set(X+f, l, '-', F | 0xd000, B) 
-				// мож пригодится
-				this.print(X, l, '   ', this.pal[0] | 0xa000, B | 0x0000) //'░'
-			}
+			if (char == '(') { F = this.pal[keyw+braceLevel], braceLevel++ }
+			else if (char == ')') { if (braceLevel > 0) braceLevel--, F = this.pal[keyw+braceLevel] }
+			else if (char == '{') { F = this.pal[keyw+curlyLevel], curlyLevel++ }
+			else if (char == '}') { if (curlyLevel > 0) curlyLevel--, F = this.pal[keyw+curlyLevel] }
+			else if (char == '/' && line.s[x + 1] == '/') lineComment = true
+			if (lineComment) F = 0x755
+			if (char == '\t') this.print(X, l, '   ', this.pal[0] | 0xa000, B | 0x0000) //'░'
 			else this.set(X, l, char, F, B), px++
 		}
 		if (line.last) { // show line end marker
@@ -430,16 +437,19 @@ TEdit.can.insertText = function (txt) {
 
 TEdit.can.userCopy = function() {
 	var s = this.text.getSelText(this.sel)
-	if (s.length > 0) clipboardData = s
+	if (s.length > 0) clipboardSet(s)
 	return true
 }
 
 TEdit.can.userPaste = function() {
-	return this.insertText(clipboardData)
+	var me = this
+	function onPaste(text) { me.insertText(text) }
+	clipboardGet(onPaste)
+	return true
 }
 
 TEdit.can.userCut = function() {
-	clipboardData = this.text.getSelText(this.sel)
+	clipboardSet(this.text.getSelText(this.sel))
 	this.deleteSelected()
 	this.scrollToView()
 	this.getDesktop().display.caretReset()
@@ -702,7 +712,7 @@ TEdit.can.setText = function(s) {
 TEdit.can.commandGoToLine = function() {
 	var me = this
 	var win = TInputBox.create(45, 'Переход', 'Номер строки', function(text) {
-		me.para = parseInt(text)
+		me.para = parseInt(text - 1)
 		if (me.para > me.text.L.length - 1) me.para = me.text.L.length - 1
 		me.sym = 0
 		me.scrollToView()
@@ -771,6 +781,7 @@ TEdit.can.commandFind = function() {
 		me.textToFind = text
 		me.commandFindNext()
 	})
+	if (this.sel.clean() != true) win.input.setText(this.text.getSelText(this.sel))
 	this.getDesktop().showModal(win)
 	return true
 }
