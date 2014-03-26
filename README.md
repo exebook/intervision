@@ -1,10 +1,17 @@
-intervision
+Интервидение (intervision)
 ===========
 
-Embeddable text UI kit, inspired by TurboVision
+Язык програмирования: JavaScript.
 
+Встраиваемый набор видов (классов) для создания пользовательских приложений на текстовом экране.
+Основано на воспоминаниях о TurboVision.
+Требует обёртки для отрисовки и получения сообщений ввода.
 
-status
+Состояние
 ===========
 
-Being actively developed to be a part of Deodar
+Разрабатывается для рабочей среды "Деодар"
+Имеется обёртку GLXVision на основе GLXWin.
+
+https://github.com/exebook/glxwin
+

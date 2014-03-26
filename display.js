@@ -1,6 +1,7 @@
 var fs = require('fs')
 fonts = [
 { name: '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono.ttf', extra_x: 0, tune_y: 0 },
+{ name: '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono-Bold.ttf', extra_x: 0, tune_y: 0 },
 { name: '/usr/share/fonts/truetype/tlwg/TlwgTypewriter.ttf'},
 { name: '/usr/share/fonts/truetype/freefont/FreeMono.ttf', extra_x: 0, tune_y: -1 },
 //{ name: '', extra_x: 0, tune_y: 0 },
@@ -10,7 +11,7 @@ fonts = [
 { name: '/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf',  extra_x: 0, tune_y: -1 },
 { name: '/usr/share/fonts/truetype/ttf-liberation/LiberationMono-Regular.ttf', extra_x: 0, tune_y: -1 },
 { name: '/y/yaui/glx/f/consola.ttf', extra_x: -1, tune_y: 0 },
-{ name: '/home/ya/.deodar/fixed7.ttf', extra_x: 1, tune_y: -1 },
+{ name: '/home/ya/.deodar/fixed7.ttf', extra_x: 1, tune_y: 0 },
 ]
 
 var fontSize = 21
@@ -21,7 +22,8 @@ function selectFirstAvailableFont() {
 }
 
 var f = selectFirstAvailableFont()
-var f = 9
+var f = 10
+//fontSize = 15, f = 0
 
 markerModified = 'x'
 

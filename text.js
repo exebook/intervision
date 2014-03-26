@@ -4,8 +4,8 @@ TSelection.can.init = function() {
 	this._data = data// for debug
 	function sort() { with (data) {
 		if ((a.y > b.y) || (a.y == b.y && a.x > b.x))
-			s = { a: { x: data.b.x, y: data.b.y}, b: {x: data.a.x, y: data.a.y} }
-		else s = { b: { x: data.b.x, y: data.b.y}, a: {x: data.a.x, y: data.a.y} }
+			s = { a: { x: data.b.x, y: data.b.y }, b: { x: data.a.x, y: data.a.y } }
+		else s = { b: { x: data.b.x, y: data.b.y }, a: { x: data.a.x, y: data.a.y } }
 		return s
 	}}
 	this.get = function() {
