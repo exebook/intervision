@@ -112,18 +112,19 @@ TModalTextView.can.init = function(Desktop, fileName, viewClass, colors) {
 	this.fileName = fileName
 }
 
+TModalTextView.can.close = function() {
+	this.viewer.savePosState()
+	dnaof(this)
+}
+
 TModalTextView.can.closePrompt = function() {
 	if (this.viewer.isModified == undefined) return this.close() // not an edit
 	var me = this
 	if (this.viewer.isModified()) {
-		var win = TOkCancel.create('Файл изменён, выйти без сохранения?', function() {
-			me.close()
-		})
+		var win = TExitSaveCancel.create()
+		win.link = this
 		this.getDesktop().showModal(win)
-	} else {
-		this.viewer.savePosState()
-		this.close()
-	}
+	} else this.close()
 	return true
 }
 

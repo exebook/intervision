@@ -11,6 +11,7 @@ TDialog.can.init = function(W, H) {
 	this.addRow = function() { this.addX = 5, this.addY += this.addLineH }
 	this.pal = getColor.dialog
 }
+
 TDialog.can.add = function(item, W, H) {
 	if (item.name == 'TButton') this.buttons.push(item)
 	dnaof(this, item)
@@ -19,9 +20,11 @@ TDialog.can.add = function(item, W, H) {
 	this.addX += W + 2
 	if (H > this.addLineH) this.addLineH = H
 }
+
 TDialog.can.onKey = function(K) {
 	if (K.down) for (var i = 0; i < this.buttons.length; i++) {
-		if (this.buttons[i].key == K.key) {
+		var key = this.buttons[i].key, k
+		if ((key.map===[].map && key.indexOf(K.key) >= 0) || key == K.key) {
 			this.buttons[i].onClick()
 			this.repaint()
 			return true
@@ -32,7 +35,7 @@ TDialog.can.onKey = function(K) {
 
 TOkCancel = kindof(TDialog)
 TOkCancel.can.init = function(message, callbackOk, callbackCancel) {
-	dnaof(this, message.length + 14, 8)
+	dnaof(this, message.length + 14, 6)
 	this.msg = TLabel.create(message)
 	this.add(this.msg, message.length, 1)
 	this.addRow()
@@ -67,6 +70,45 @@ TInputBox.can.init = function(width, title, message, callback) {
 	this.size(this.w, this.addY + 3)
 	this.actor = this.input
 }
+
+TExitSaveCancel = kindof(TDialog)
+TExitSaveCancel.can.init = function() {
+	var message = 'Выйти без сохранения?'
+	dnaof(this, 50, 6)
+	this.title = 'Выход и сохранение'
+	this.msg = TLabel.create(message)
+	this.add(this.msg, message.length, 1)
+	this.addRow()
+	var me = this
+	this.yes = TButton.create(keycode.ENTER, 'Да', function() {
+		me.link.close()
+		me.close()
+		return true
+	})
+	this.add(this.yes, 10, 1)
+	this.save = TButton.create(keycode.F2, ' Сохранить', function() {
+		saveAndClose()
+	})
+	this.add(this.save, 11, 1)
+	this.cancel = TButton.create(keycode.ESCAPE, 'Отмена', function() {
+		me.close()
+		return true
+	})
+	this.add(this.cancel, 10, 1)
+	this.addRow()
+	this.addRow()
+	this.hint = TLabel.create('F2, Control-S: соханить и выйти')
+	this.add(this.hint, this.w - 10, 1)
+	this.size(this.w, this.addY + 3)
+	function saveAndClose() {
+		me.link.viewer.save()
+		me.link.close()
+		me.close()
+		return true
+	}
+	this.react(100, keycode['s'], saveAndClose)
+}
+
 
 TMessageBox = kindof(TDialog)
 TMessageBox.can.init = function() {

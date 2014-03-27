@@ -431,6 +431,7 @@ TEdit.can.insertText = function (txt) {
 	this.para = A.para, this.sym = A.sym
 	this.updateTargetX()
 	this.scrollToView()
+	this.repaint()
 	this.getDesktop().display.caretReset()
 	return true
 }
