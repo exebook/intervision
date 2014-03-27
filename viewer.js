@@ -113,7 +113,7 @@ TModalTextView.can.init = function(Desktop, fileName, viewClass, colors) {
 }
 
 TModalTextView.can.close = function() {
-	this.viewer.savePosState()
+	if (this.viewer.isModified != undefined) this.viewer.savePosState()
 	dnaof(this)
 }
 

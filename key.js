@@ -43,7 +43,8 @@ TKeyInput.can.onKey = function(K) {
 					var ct = m.charAt(0) == '1', al = m.charAt(1) == '1', sh = m.charAt(2) == '1'
 					match = ct == K.mod.control && al == K.mod.alt && sh == K.mod.shift
 					if (match) {
-						return u.func.apply(u.view, [u.arg, { K:K }])
+						if (u.func) return u.func.apply(u.view, [u.arg, { K:K }])
+						return
 					}
 				}
 			}
