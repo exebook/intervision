@@ -193,7 +193,14 @@ TGLXVision.can.onKey = function(down, char, key, physical) {
 		left: { control: k[1], alt: k[4], shift: k[7] },
 		right: { control: k[2], alt: k[5], shift: k[8] },
 	}
-	var state = { key:key, char:char, down:down, physical:physical, mod:mod, plain: !(k[0] || k[3] || k[6]) }
+	var bit = 0
+	if (mod.control) bit += 100
+	if (mod.alt) bit += 10
+	if (mod.shift) bit += 1
+	var state = {
+		key:key, char:char, down:down, physical:physical, 
+		mod:mod, bit:bit, plain: !(k[0] || k[3] || k[6])
+	}
 	if (this.desktop.onKey(state)) this.repaint()
 }
 
