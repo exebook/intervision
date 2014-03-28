@@ -1,3 +1,5 @@
+// можно разрастающиеся виды выносить в отдельные файлы
+
 TControl = kindof(TView)
 TControl.can.init = function() {
 	dnaof(this)
@@ -74,4 +76,22 @@ TDoneBar.can.draw = function(state) {
 	this.rect(X, 0, this.w, 1, '░', 0xaaa, 0x888, 0x0)
 	this.rect(0, 0, X, 1, ' ', this.pal[1], this.pal[0]) //█
 }
+
+
+TScrollBar = kindof(TView)
+TScrollBar.can.init = function(color) {
+	this.pal = color
+}
+TScrollBar.can.draw = function(state) {
+	this.clear(' ', this.pal[0], this.pal[1] | 0x1000)
+//	this.print(0, 0, '  ', this.pal[0], this.pal[1] | 0x1000)
+//	this.print(0, this.h - 1, '  ', this.pal[0], this.pal[1] | 0x1000)
+	if (this.track) {
+		var track = this.track()
+		var max = track.size + 1 // track.page -- depends on pagedown/end behaviour
+		var Y = Math.floor(this.h * (track.pos / max))
+		this.print(0, Y, '::', this.pal[0], this.pal[1] | 0x3000)
+	}
+}
+
 

@@ -60,6 +60,7 @@ TGLXVision.can.init = function(desktopKind, W, H) {
 	this.name = 'TGLXVision'
 	this.caretReset()
 	this.setXYWH(undefined, undefined, W * this.fnt[0], H * this.fnt[1])
+	this.setSizeSteps(this.fnt[0], this.fnt[1])
 }
 
 TGLXVision.can.caretDraw= function() {
@@ -104,34 +105,11 @@ TGLXVision.can.caretReset = function() {
 	me.caretDraw()
 }
 
-TGLXVision.can.onSizeDo = function() {
-	var w = this.resizeLast.w, h = this.resizeLast.h
-	var W = Math.floor(w / this.fnt[0]), H = Math.floor(h / this.fnt[1])
-	if (this.desktop.w != W || this.desktop.h != H) {
-		this.desktop.size(W, H)
-		this.repaint()
-	}
-}
 
 TGLXVision.can.onSize = function(w, h) {
-	if (this.ignoreResize == true) {
-		this.ignoreResize = false
-		return
-	}
-	var me = this
-	this.resizeLast = {w:w, h:h}
-	if (this.resizer == undefined) this.resizer = setInterval(function() {
-		me.onSizeDo()
-	}, 200)
-	if (this. stopResize != undefined) clearTimeout(this.stopResize)
-	this. stopResize = setTimeout(function(){
-		this. stopResize  = undefined
-		clearInterval(this.resizer)
-		this.resizer = undefined
-		var W = me.desktop.w * me.fnt[0], H = me.desktop.h * me.fnt[1]
-		me.ignoreResize = true
-		me.setXYWH(undefined, undefined, W, H)
-	}, 400)
+	var W = Math.floor(w / this.fnt[0]), H = Math.floor(h / this.fnt[1])
+	this.desktop.size(W, H)
+	setTimeout(this.repaint.bind(this), 30)
 }
 
 TGLXVision.can.onPaint = function() {
@@ -139,18 +117,14 @@ TGLXVision.can.onPaint = function() {
 	this.crect(0, 0, A[2], A[3], 0xff000000)
 	if (this.caretOnly == true) return
 //	try { // TODO: make all C++ win::callbacks automagic with error and backtrace
-		this.desktop.draw({ active:true, focused: true })
-		renderView(this, this.desktop, 0, 0)
-		var x = this.desktop.w * this.fnt[0],
-			y = this.desktop.h * this.fnt[1],
-			w = A[2] - 0,
-			h = A[3] - 0
-		this.crect(x, 0, w, h, 0xff000000)
-		this.crect(0, y, x, h, 0xff000000)
-//	} catch (e) {
-//		console.log(e)
-//		backtrace()
-//	}
+	this.desktop.draw({ active:true, focused: true })
+	renderView(this, this.desktop, 0, 0)
+	var x = this.desktop.w * this.fnt[0],
+		y = this.desktop.h * this.fnt[1],
+		w = A[2] - 0,
+		h = A[3] - 0
+	this.crect(x, 0, w, h, 0xff000000)
+	this.crect(0, y, x, h, 0xff000000)
 	this.caretDraw()
 }
 

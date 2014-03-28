@@ -404,7 +404,7 @@ TEdit.can.lineScroll = function(arg) {
 
 TEdit.can.onKey = function(k) {
 	var R = dnaof(this, k)
-	if (!R && k.char != undefined) {
+	if (!R && k.char != undefined && k.key != keycode.ESCAPE) {
 		if (k.mod.control == false && k.mod.alt == false) {
 			if (!this.sel.clean()) this.deleteSelected()
 			var A = this.text.insertTextAt(k.char, this.para, this.sym)

@@ -1,98 +1,3 @@
-
-
-TTextView = kindof(TView)
-
-TTextView.can.init = function() {
-	dnaof(this)
-	this.lines = []
-	for (var i = 0; i < 40; i++) this.lines.push('')//'* * * * * * ' + i + ' * * * * * *')
-	this.name = 'TTextView'
-	this.d = 0
-	this.navx = 0
-	this.react(0, keycode.UP, this.moveCursor, {arg:'up'})
-	this.react(0, keycode.DOWN, this.moveCursor, {arg:'down'})
-	this.react(0, keycode.HOME, this.moveCursor, {arg:'home'})
-	this.react(0, keycode.END, this.moveCursor, {arg:'end'})
-	this.react(0, keycode.PAGE_UP, this.moveCursor, {arg:'pageup'})
-	this.react(0, keycode.PAGE_DOWN, this.moveCursor, {arg:'pagedown'})
-	this.react(0, keycode.LEFT, this.moveCursor, {arg:'left'})
-	this.react(0, keycode.RIGHT, this.moveCursor, {arg:'right'})
-	this.pal = getColor.syntax
-	this.tabSize = 3
-}
-
-TTextView.can.coloredPrint = function(x, y, s) {
-	var L = colorizeString(s)
-	for (var i = 0; i < s.length; i++) {
-		var F = this.pal[L[i] + 4]
-		this.set(x + i, y, s[i], F, this.pal[1])
-	}
-}
-TTextView.can.draw = function() {
-	dnaof(this)
-	var e = this.d + this.h, y = 0
-	for (var i = this.d; i < e; i++) {
-		if (i >= this.lines.length) break
-		var s = this.lines[i]
-		this.coloredPrint(-this.navx, y, s)
-		y++
-	}
-}
-
-TTextView.can.moveCursor = function(arg) { with (this) {
-	if (arg == 'up') {
-		this.d--
-		if (this.d < 0) this.d = 0
-	} else if (arg == 'down') {
-		this.d++
-		if (this.d > this.lines.length - this.h)  this.scrollToBottom()
-	} else if (arg == 'home') {
-		d = 0
-		x = 0
-	} else if (arg == 'end') {
-		d = lines.length - h + 1
-		if (d < 0) d = 0
-	} else if (arg == 'pageup') {
-		d -= h - 1
-		if (d < 0) d = 0
-	} else if (arg == 'pagedown') {
-		d += h - 1
-		if (d > lines.length - h + 1) d = lines.length - h + 1
-		if (d < 0) d = 0
-	} else if (arg == 'left') {
-		navx -= 5
-		if (navx < 0) navx = 0
-	} else if (arg == 'right') {
-		navx += 5
-	}
-	return true
-}}
-
-TTextView.can.scrollToBottom = function() {
-	this.d = this.lines.length - this.h
-	if (this.d < 0) this.d = 0
-}
-
-TTextView.can.track = function() {
-	return { pos: this.d, size: this.lines.length, page: this.h }
-}
-
-TScrollBar = kindof(TView)
-TScrollBar.can.init = function(color) {
-	this.pal = color
-}
-TScrollBar.can.draw = function(state) {
-	this.clear(' ', this.pal[0], this.pal[1] | 0x1000)
-//	this.print(0, 0, '  ', this.pal[0], this.pal[1] | 0x1000)
-//	this.print(0, this.h - 1, '  ', this.pal[0], this.pal[1] | 0x1000)
-	if (this.track) {
-		var track = this.track()
-		var max = track.size + 1 // track.page -- depends on pagedown/end behaviour
-		var Y = Math.floor(this.h * (track.pos / max))
-		this.print(0, Y, '::', this.pal[0], this.pal[1] | 0x3000)
-	}
-}
-
 TModalTextView = kindof(TWindow)
 TModalTextView.can.init = function(Desktop, fileName, viewClass, colors) {
 	dnaof(this)
@@ -105,7 +10,7 @@ TModalTextView.can.init = function(Desktop, fileName, viewClass, colors) {
 	this.scrollBar.disabled = true
 	this.scrollBar.track = this.viewer.track.bind(this.viewer)
 	this.scrollBar.pal = [this.viewer.pal[0], this.viewer.pal[1]]
-	this.react(0, keycode.ESCAPE, this.closePrompt)
+	this.react(100, keycode.ESCAPE, this.close)//Prompt)
 	this.actor = this.viewer
 	var syntax = colors
 	this.pal = [syntax[0], syntax[1], syntax[2], syntax[3]]//colors
@@ -126,6 +31,35 @@ TModalTextView.can.closePrompt = function() {
 		this.getDesktop().showModal(win)
 	} else this.close()
 	return true
+}
+
+TModalTextView.can.onKey = function(hand) {
+	if (hand.plain && hand.key == keycode.ESCAPE && hand.physical) { // необычное решение
+		if (this.viewer.isModified() == false) this.close();
+		else if (hand.down) {
+			if (this.warn) this.warn.hidden = false
+			else {
+				var s = 'Control-Esq: выйти без сохранения'
+				this.warn = TDialog.create()
+				this.warn.title = 'Файл не сохранён'
+				this.warn.size(s.length + 14, 6)
+				this.warn.pos((this.w - this.warn.w)>>1, (this.h - this.warn.h)>>1)
+				var l
+				l = TLabel.create(s), l.pos(5, 5)
+				this.warn.add(l, this.warn.w - 10, 1)
+				l = TLabel.create('F2 или Control-S: сохранить'), l.pos(5, 5)
+				this.warn.add(l, this.warn.w - 10, 1)
+				this.add(this.warn)
+			}
+			this.actor = this.warn
+			this.repaint()
+		} else {
+			this.warn.hidden = true
+			this.actor = this.viewer
+		}
+		return true
+	}
+	return dnaof(this, hand)
 }
 
 TModalTextView.can.loadFile = function() {
