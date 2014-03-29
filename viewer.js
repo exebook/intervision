@@ -35,7 +35,10 @@ TModalTextView.can.closePrompt = function() {
 
 TModalTextView.can.onKey = function(hand) {
 	if (hand.plain && hand.key == keycode.ESCAPE && hand.physical) { // необычное решение
-		if (this.viewer.isModified() == false) this.close();
+		if (this.viewer.isModified == undefined || this.viewer.isModified() == false) {
+			if (hand.down) this.close();
+			return true
+		}
 		else if (hand.down) {
 			if (this.warn) this.warn.hidden = false
 			else {
@@ -107,6 +110,7 @@ TFileEdit.can.init = function(fileName) {
 	}
 	this.react(0, keycode.F2, this.save)
 	this.react(100, keycode['s'], this.save)
+	this.react(100, keycode['p'], this.reloadPalette)
 }
 
 TFileEdit.can.savePosState = function() {
@@ -127,6 +131,14 @@ TFileEdit.can.isModified = function() {
 	return this.text.modified == true
 }
 
+TFileEdit.can.reloadPalette = function() {
+	this.save()
+	require('./palette')
+	this.pal = getColor['syntaxGreen']
+	this.repaint()
+	return true
+}
+
 function viewFileContinue(yes) {
 	if (yes == false) return
 	this.loadFile()
@@ -137,7 +149,12 @@ function viewFileContinue(yes) {
 viewFile = function(Desktop, fileName, viewClass, colors) {
 	var t = TModalTextView.create(Desktop, fileName, viewClass, colors)
 	t.parent = Desktop
-	var size = fs.statSync(fileName).size
+	try {
+		var size = fs.statSync(fileName).size
+	} catch (e) {
+		messageBox(Desktop, 'Файл "' + fileName.split('/').pop() + '" не удалось открыть')
+		return
+	}
 	var maxSize = 300000
 	var f = viewFileContinue.bind(t)
 	if (size > maxSize) {

@@ -1,0 +1,92 @@
+/*
+	TList = kindof(TView)
+	2 + 2 = 4, ['abc']
+	TList.can.init = function() {
+		if (true) { if (me) { me = this[123] } }
+	}
+
+	applyEnterRules = function(s) {
+		for (var i = 0; i < enterRule.length; i++) {
+			var e = enterRule[i]
+			var x = '.' + e.ext
+			var j = s.indexOf(x)
+			if (j >= 0 && j == s.length - x.length) {
+				if (e.tty) return { tty: e.tty, name: s }
+				if (e.spawn) return { spawn: e.spawn, name: s }
+				return { name: s }
+			}
+		}
+*/
+
+delete require.cache[require.resolve('./palette')]
+
+delete getColor
+
+getColor = {
+	view: [0xaa0, 0x700],
+	window: [0xaa0, 0x700, 0xff0, 0xa44],
+	dialog: [0x555, 0xbcd, 0x444, 0x9ab, 0x555, 0, 0xefe],//	$.bg = , $.frame.fg = 0x555, $.frame.fg_focus = 0,
+	list: [0xaa0, 0x700, 0x700, 0x880, 0x0ff],//0xff0, 0x880, 0xfff],//, 0x00f, 0xafa, 0x88f],
+//	filelist: [0x700, 0xff0, 0x880, 0xfff, 0x00f, 0xafa, 0x88f],
+	filelist: [0xff0, 0x700, 0xfff, 0xff,
+		0, 0, 0x880, 0, 0],
+	label: [0, 0xe0e, 0xf00, 0x0f0],
+	button: [0, 0x888],
+	edit: [0x990, 0x500, 0xff0],
+	syntaxGreen: [0xff0, 0x580, 0x400, 0xaa0, 
+		0x370, // selection
+		0xbb7, //comment
+		0x000, // sym
+		0x0f8, // num
+		0x08f, //str
+		0x433, // id
+		0x0ff, //key 0 function
+		0x0af, // key 1 dnaof
+		0x0, // key 2 console
+		0xf14, // key 3 TView
+		0xa03,  // false this
+	],
+	syntaxCyan: [0xff0, 0x990, 0x400, 0xaa0, 
+		0x580, // selection
+		0x888, //comment
+		0xdd0, // sym
+		0x0f8, // num
+		0x00e, //str
+		0x433, // id
+		0x0ff, //key 0 function
+		0x0af, // key 1 dnaof
+		0x0, // key 2 console
+		0xf00, // key 3 TView
+		0xa03,  // false this
+	],
+	syntaxWhite: [0x844, 0xfff, 0x0, 0xfff, 
+		0xee4, // selection
+		0x888, //comment
+		0, // sym
+		0x077, // num
+		0x04f, //str
+		0x777, // id
+		0xf00, //key 0 function
+		0x282, // key 1 dnaof
+		0x0, // key 2 console
+		0xf80, // key 3 TView
+		0x740,  // false this
+	],
+	syntaxBlack: [0x888, 0x000, 0xfff, 0x555, 
+		0x555, // selection
+		0x888, //comment
+		0xfff, // sym
+		0x077, // num
+		0x04f, //str
+		0x777, // id
+		0xf00, //key 0 function
+		0x282, // key 1 dnaof
+		0x0, // key 2 console
+		0xf80, // key 3 TView
+		0x740,  // false this
+	],
+	console: [0x777, 0x233, 0xf00, 0xf0f, 0x00f],
+	consoleGreen: [0x6a6, 0x021],
+	editor: [0x444, 0xfff]
+}
+

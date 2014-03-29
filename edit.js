@@ -145,7 +145,7 @@ TEdit.can.draw = function(state) {
 		}
 		var px = 0
 		if (match) colorizeMatch(line, match, -1)
-		var lineComment = false, keyw = 4
+		var lineComment = false, keyw = 7
 		for (var x = 0; x < line.s.length; x++) {
 			B = this.pal[1]
 			var X = line.w[x]
@@ -153,18 +153,18 @@ TEdit.can.draw = function(state) {
 			if (P == -1) {
 				B = 0xff, F = 0x800
 				if (this.match) B = 0x88f, F = 0x0cc
-			} else F = this.pal[P + 4]
-			if	(selState == 5 || 
+			} else F = this.pal[P + 5]
+			if 	(selState == 5 || 
 					(selState == 1 && X >= sel.a[1])
-				||	(selState == 2 && X >= sel.a[1] && X < sel.b[1]) 
-				||	(selState == 3 && X < sel.b[1])
-			) B = this.pal[4], F = this.pal[P + 4]
+				|| (selState == 2 && X >= sel.a[1] && X < sel.b[1]) 
+				|| (selState == 3 && X < sel.b[1])
+			) B = this.pal[4]//, F = this.pal[P + 5]
 			if (char == '(') { F = this.pal[keyw+braceLevel], braceLevel++ }
 			else if (char == ')') { if (braceLevel > 0) braceLevel--, F = this.pal[keyw+braceLevel] }
 			else if (char == '{') { F = this.pal[keyw+curlyLevel], curlyLevel++ }
 			else if (char == '}') { if (curlyLevel > 0) curlyLevel--, F = this.pal[keyw+curlyLevel] }
 			else if (char == '/' && line.s[x + 1] == '/') lineComment = true
-			if (lineComment) F = 0x755
+			if (lineComment) F = this.pal[5]
 			if (char == '\t') this.print(X, l, '   ', this.pal[0] | 0xa000, B | 0x0000) //'░'
 			else this.set(X, l, char, F, B), px++
 		}

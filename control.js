@@ -58,7 +58,8 @@ TInput = kindof(TEdit)
 TInput.can.init = function(text) {
 	dnaof(this)
 	this.multiLine = false
-	this.setText(text)
+	this.shortcuts.enable('multi', false)
+	if (text) this.setText(text)
 }
 
 TDoneBar = kindof(TView)

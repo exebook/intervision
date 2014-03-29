@@ -2,10 +2,9 @@ TList = kindof(TView)
 
 TList.can.init = function() {
 	dnaof(this)
-	this.items = [], this.d = 0, this.sid = 0
 	this.pal = getColor.list
-	this.selection = []
 	this.columns = 3
+	this.clearItems()
 	this.name = 'TList'
 	this.slideSelMode = -1
 	this.react(0, keycode.UP, this.moveCursor, { arg:'up', role:['move'] })
@@ -32,6 +31,13 @@ TList.can.init = function() {
 	this.react(1, keycode.END, this.shiftSel, { arg:'end', role:['move'] })
 	this.react(1, keycode.PAGE_UP, this.shiftSel, { arg:'pageup', role:['move'] })
 	this.react(1, keycode.PAGE_DOWN, this.shiftSel, { arg:'pagedown', role:['move'] })
+}
+
+TList.can.clearItems = function(arg) {
+	this.items = []
+	this.selection = []
+	this.sid = 0
+	this.d = 0
 }
 
 TList.can.shiftSel = function(arg) {
