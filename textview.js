@@ -25,7 +25,7 @@ TTextView.can.init = function() {
 TTextView.can.coloredPrint = function(x, y, s) {
 	var L = colorizeString(s)
 	for (var i = 0; i < s.length; i++) {
-		var F = this.pal[L[i] + 4]
+		var F = this.pal[L[i] + 5]
 		this.set(x + i, y, s[i], F, this.pal[1])
 	}
 }

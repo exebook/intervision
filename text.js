@@ -1,3 +1,5 @@
+//хранить маркеры в тексте и при каждом изменении просчитывать их новые значения
+
 TSelection = kindof(TObject)
 TSelection.can.init = function() {
 	var data = undefined

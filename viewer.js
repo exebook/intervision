@@ -42,7 +42,7 @@ TModalTextView.can.onKey = function(hand) {
 		else if (hand.down) {
 			if (this.warn) this.warn.hidden = false
 			else {
-				var s = 'Control-Esq: выйти без сохранения'
+				var s = 'Control-Esc: выйти без сохранения'
 				this.warn = TDialog.create()
 				this.warn.title = 'Файл не сохранён'
 				this.warn.size(s.length + 14, 6)
@@ -86,7 +86,8 @@ TModalTextView.can.draw = function(state) {
 		var B = this.pal[1] | 0x1000, F = this.pal[0]
 		if (this.viewer.isModified()) this.print(2, this.h-1, ' '+markerModified+' ', F, B);
 		else this.print(2, this.h-1, '   ', undefined, B)
-		this.print(7, this.h-1, ' ' + (this.viewer.para+linesCountStart) + ':' + (this.viewer.sym+symCountStart) +' ', this.pal[0], this.pal[1])
+		this.print(7, this.h-1, ' ' + (this.viewer.para+linesCountStart) 
+			+ ':' + (this.viewer.sym+symCountStart) +' ', this.pal[0], this.pal[1])
 	}
 }
 

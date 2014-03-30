@@ -88,7 +88,7 @@ TDriveList.can.drawItem = function(X) {
 	}
 	if (s.length > X.w) s = s.substr(0, X.w)
 	this.rect(X.x, X.y, X.w, 1, ' ', undefined, B)
-	var x = X.x + (X.w >> 1) - (s.length>>1)
+	var x = 0 // X.x + (X.w >> 1) - (s.length>>1) // center align
 	this.print(x, X.y, s, F, B)
 	for (var i = 0; i < lights.length; i++) this.set(lights[i] + x, X.y, undefined, this.pal[6], this.pal[3])
 	return true

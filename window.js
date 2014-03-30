@@ -51,10 +51,10 @@ TWindow.can.drawFrame = function(state, x, y, w, h) {
 		if (state.active) { F = this.pal[2], B = this.pal[3] }
 		this.print((this.w >> 1) - (title.length + 2 >> 1), y, ' '+title+' ', F, B)
 	}
-	if (this.bottom_title != undefined) {
+	if (this.bottomTitle != undefined) {
 		var title = ''
-		if (typeof this.bottom_title == 'string') title = this.bottom_title
-		if (typeof this.bottom_title == 'function') title = this.bottom_title()
+		if (typeof this.bottomTitle == 'string') title = this.bottomTitle
+		if (typeof this.bottomTitle == 'function') title = this.bottomTitle()
 		this.print((this.w >> 1) - (title.length + 2 >> 1), this.h-1 - (1 * this.border), ' '+title+' ', this.pal[0], this.pal[1])
 	}
 }
