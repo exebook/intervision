@@ -60,7 +60,7 @@ TGLXVision.can.init = function(desktopKind, W, H) {
 	this.name = 'TGLXVision'
 	this.caretReset()
 	this.setXYWH(undefined, undefined, W * this.fnt[0], H * this.fnt[1])
-	this.setSizeSteps(this.fnt[0], this.fnt[1])
+	this.setSizeSteps(this.fnt[0] * 2, this.fnt[1])
 }
 
 TGLXVision.can.caretDraw= function() {
