@@ -366,10 +366,36 @@ TEdit.can.commandDelete = function () {
 TEdit.can.deleteTo = function(arg) {
 	if (this.sel.clean()) {
 		this.sel.start(this.para, this.sym)
-		this.moveCursor(arg)
-		this.sel.end(this.para, this.sym)
+		if (arg == 'wordright') {
+			var i = 0, s = '', spaceCount, prevLength = 0, startType
+			while (true) {
+				this.moveCursor('right')
+				this.sel.end(this.para, this.sym)
+				s = this.text.getSelText(this.sel)
+				if (prevLength == s.length) break
+				if (s.length == 1) startType = lexer.charType(s[0])
+				else {
+					if (lexer.charType(s[s.length - 1]) != startType) {
+						this.moveCursor('left')
+						this.sel.end(this.para, this.sym)
+						break
+					}
+				}
+				prevLength = s.length
+			}
+			if (s.indexOf('\n') >= 0) {
+				log(this.para, this.sym)
+				log(this.sel.get())
+				log('"'+s+'"')
+				return this.insertText(' ')
+			}
+		} else {
+			this.moveCursor(arg)
+			this.sel.end(this.para, this.sym)
+		}
 		if (this.sel.clean()) return true
 	}
+	s = this.text.getSelText(this.sel)
 	this.deleteSelected()
 	this.scrollToView()
 	this.getDesktop().display.caretReset()
@@ -420,6 +446,10 @@ TEdit.can.onKey = function(k) {
 
 TEdit.can.commandEnter = function () {
 	var i = 0, s = this.text.L[this.para], t = ''
+	var n = this.sym
+	while (n < s.length && (s[n] == ' ' || s[n] == '\t')) n++
+	n -= this.sym
+	i += n
 	while (i < s.length && s[i] == '\t' || s[i] == ' ') t += s[i++]
 	return this.insertText('\n' + t)
 }

@@ -22,6 +22,7 @@ function selectFirstAvailableFont() {
 var f = selectFirstAvailableFont()
 //var f = 8
 fontSize = 20, f = 1
+fontSize = 16, f = 0
 
 markerModified = 'x'
 
