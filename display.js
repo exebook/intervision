@@ -12,7 +12,6 @@ fonts = [
 { name: '/home/ya/.deodar/fixed7.ttf', extra_x: 1, tune_y: 0 },
 ]
 
-var fontSize = 21
 
 function selectFirstAvailableFont() {
 	for (var i = 0; i < fonts.length; i++) if (fs.existsSync(fonts[i].name)) return i
@@ -20,10 +19,11 @@ function selectFirstAvailableFont() {
 }
 
 var f = selectFirstAvailableFont()
+var fontSize = 18
 //var f = 8
-fontSize = 20, f = 1
-fontSize = 16, f = 0
-fontSize = 16, f = 2
+//fontSize = 20, f = 1
+//fontSize = 16, f = 0
+//fontSize = 16, f = 2
 //fontSize = 16, f = 4
 
 markerModified = 'x'
