@@ -1,7 +1,7 @@
 var fs = require('fs')
 fonts = [
-{ name: '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono.ttf', extra_x: 0, tune_y: 0 },
 { name: '/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', extra_x: 0, tune_y: 0 },
+{ name: '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono.ttf', extra_x: 0, tune_y: 0 },
 //{ name: '', extra_x: 0, tune_y: 0 },
 { name: '/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf', extra_x: 0, tune_y: 0 },
 { name: '/usr/share/fonts/truetype/msttcorefonts/Andale_Mono.ttf', extra_x: 0, tune_y: -1 },
