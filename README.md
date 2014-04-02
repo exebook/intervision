@@ -11,7 +11,7 @@
 ===========
 
 Разрабатывается для рабочей среды "Деодар"
-Имеется обёртку GLXVision на основе GLXWin.
+Имеется обёртка GLXVision на основе GLXWin.
 
 https://github.com/exebook/glxwin
 

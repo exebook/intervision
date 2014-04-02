@@ -48,11 +48,11 @@ getColor = {
 	],
 	syntaxCyan: [0xff0, 0x990, 0x400, 0xaa0, 
 		0x580, // selection
-		0x888, //comment
+		0x755, //comment
 		0xdd0, // sym
 		0x0f8, // num
 		0x00e, //str
-		0x433, // id
+		0x211, // id
 		0x0ff, //key 0 function
 		0x0af, // key 1 dnaof
 		0x0, // key 2 console

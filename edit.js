@@ -131,11 +131,12 @@ TEdit.can.draw = function(state) {
 //	if (caret[1] == undefined) caret[1] = 0
 	if (state.focused && caret) F = this.pal[2], this.caret = { x: caret[1], y: caret[0] - this.delta, color: this.pal[0] }
 	else delete this.caret
-	var braceLevel = 0, curlyLevel = 0
+	var braceLevel = 0, curlyLevel = 0, B, F
+	var lineComment = false, keyw = 7
 	for (var l = 0; l < lines.length; l++) {
 		var line = lines[l]
 		if (match) colorizeMatch(line, match)
-		var B = this.pal[1], F
+		B = this.pal[1]
 		if (sel) {
 			if (Y < sel.a[0]) selState = 0
 				else if (Y == sel.a[0]) { if (Y != sel.b[0]) selState = 1; else selState = 2 }
@@ -145,7 +146,7 @@ TEdit.can.draw = function(state) {
 		}
 		var px = 0
 		if (match) colorizeMatch(line, match, -1)
-		var lineComment = false, keyw = 7
+		if (line.part == 0) lineComment = false, keyw = 7
 		for (var x = 0; x < line.s.length; x++) {
 			B = this.pal[1]
 			var X = line.w[x]
@@ -160,12 +161,16 @@ TEdit.can.draw = function(state) {
 				|| (selState == 3 && X < sel.b[1])
 			) B = this.pal[4]//, F = this.pal[P + 5]
 			if (char == '(') { F = this.pal[keyw+braceLevel], braceLevel++ }
-			else if (char == ')') { if (braceLevel > 0) braceLevel--, F = this.pal[keyw+braceLevel] }
-			else if (char == '{') { F = this.pal[keyw+curlyLevel], curlyLevel++ }
-			else if (char == '}') { if (curlyLevel > 0) curlyLevel--, F = this.pal[keyw+curlyLevel] }
+			else if (char == ')') 
+				{ if (braceLevel > 0) braceLevel--, F = this.pal[keyw+braceLevel] }
+			else if (char == '{') 
+				{ F = this.pal[keyw+curlyLevel], curlyLevel++ }
+			else if (char == '}') 
+				{ if (curlyLevel > 0) curlyLevel--, F = this.pal[keyw+curlyLevel] }
 			else if (char == '/' && line.s[x + 1] == '/') lineComment = true
 			if (lineComment) F = this.pal[5]
-			if (char == '\t') this.print(X, l, '   ', this.pal[0] | 0xa000, B | 0x0000) //'░'
+			if (char == '\t') this.print(
+				X, l, '   ', this.pal[0] | 0xa000, B | 0x0000) //'░'
 			else this.set(X, l, char, F, B), px++
 		}
 		if (line.last) { // show line end marker
@@ -177,7 +182,8 @@ TEdit.can.draw = function(state) {
 		Y++
 	}
 	if (l < this.h) {
-		this.rect(0, l, this.w, this.h, '░', this.pal[0] | 0xa000, this.pal[1])// | 0x1000)
+		this.rect(0, l, this.w, this.h, '░', this.pal[0] | 0xa000, this.pal[1])
+			// | 0x1000)
 	}
 }
 
@@ -378,15 +384,13 @@ TEdit.can.deleteTo = function(arg) {
 					if (lexer.charType(s[s.length - 1]) != startType) {
 						this.moveCursor('left')
 						this.sel.end(this.para, this.sym)
+						s = this.text.getSelText(this.sel)
 						break
 					}
 				}
 				prevLength = s.length
 			}
 			if (s.indexOf('\n') >= 0) {
-				log(this.para, this.sym)
-				log(this.sel.get())
-				log('"'+s+'"')
 				return this.insertText(' ')
 			}
 		} else {

@@ -303,9 +303,7 @@ TText.can.getSelText = function(selection) {
 	if (selection.clean()) return ''
 	var sel = selection.get()
 	var A = sel.a, B = sel.b, R = []
-log('-----------')
 	for (var i = A.y; i <= B.y; i++) {
-log('->', i)
 		var a = 0, b = this.L[i].length
 		if (i == A.y) a = A.x
 		if (i == B.y) b = B.x
