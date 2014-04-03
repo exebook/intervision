@@ -135,7 +135,7 @@ TFileEdit.can.isModified = function() {
 TFileEdit.can.reloadPalette = function() {
 	this.save()
 	require('./palette')
-	this.pal = getColor['syntaxGreen']
+	this.pal = getColor[theme.editor]
 	this.repaint()
 	return true
 }

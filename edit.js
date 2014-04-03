@@ -478,7 +478,12 @@ TEdit.can.userCopy = function() {
 
 TEdit.can.userPaste = function() {
 	var me = this
-	function onPaste(text) { me.insertText(text) }
+	function onPaste(text) { 
+		if (me.multiLine == false) {
+			text = text.split('\n').join(' ')
+		}
+		me.insertText(text)
+	}
 	clipboardGet(onPaste)
 	return true
 }
@@ -758,6 +763,7 @@ TEdit.can.commandGoToLine = function() {
 
 TEdit.can.commandFindNext = function() {
 	var me = this
+	if (me.textToFind == undefined) return true
 	var t = me.text.L, c = t.length, match
 	for (var p = me.para + 1; p < c; p++) {
 		var sym = t[p].indexOf(me.textToFind)

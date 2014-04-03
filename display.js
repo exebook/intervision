@@ -1,30 +1,10 @@
-var fs = require('fs')
-fonts = [
-{ name: '/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', extra_x: 0, tune_y: 0 },
-{ name: '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono.ttf', extra_x: 0, tune_y: 0 },
-//{ name: '', extra_x: 0, tune_y: 0 },
-{ name: '/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf', extra_x: 0, tune_y: 0 },
-{ name: '/usr/share/fonts/truetype/msttcorefonts/Andale_Mono.ttf', extra_x: 0, tune_y: -1 },
-{ name: '/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono-Oblique.ttf', extra_x: 0, tune_y: -1 },
-{ name: '/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf',  extra_x: 0, tune_y: -1 },
-{ name: '/usr/share/fonts/truetype/ttf-liberation/LiberationMono-Regular.ttf', extra_x: 0, tune_y: -1 },
-{ name: '/y/yaui/glx/f/consola.ttf', extra_x: -1, tune_y: 0 },
-{ name: '/home/ya/.deodar/fixed7.ttf', extra_x: 1, tune_y: 0 },
+var fontHints = [
+	{ name: 'Andale_Mono.ttf', x: 0, y: -1 },
+	{ name: 'DejaVuSansMono-Oblique.ttf', x: 0, y: -1 },
+	{ name: 'UbuntuMono-R.ttf',  x: 0, y: -1 },
+	{ name: 'LiberationMono-Regular.ttf', x: 0, y: -1 },
+	{ name: 'FreeMono.ttf', x: 0, y: -1 },
 ]
-
-
-function selectFirstAvailableFont() {
-	for (var i = 0; i < fonts.length; i++) if (fs.existsSync(fonts[i].name)) return i
-	return -1
-}
-
-var f = selectFirstAvailableFont()
-var fontSize = 18
-//var f = 8
-//fontSize = 20, f = 1
-//fontSize = 16, f = 0
-//fontSize = 16, f = 2
-//fontSize = 16, f = 4
 
 markerModified = 'x'
 
@@ -49,8 +29,12 @@ function renderView(win, view, atx, aty) {
 
 TGLXVision = kindof(TGLXWin)
 
-TGLXVision.can.init = function(desktopKind, W, H) {
-	dnaof(this, undefined, fonts[f].name, fontSize, fonts[f].extra_x, fonts[f].tune_y)
+TGLXVision.can.init = function(fontPath, fontSize, desktopKind, W, H) {
+	var hintX, hintY
+	for (var i = 0; i < fontHints.length; i++)
+		if (fontPath.indexOf('/'+fontHints[i].name) >= 0)
+			hintX = fontHints[i].x, hintY = fontHints[i].y
+	dnaof(this, undefined, fontPath, fontSize, hintX, hintY)//fonts[f].extra_x, fonts[f].tune_y)
 	this.fnt = this.applyFont()// not implemented at all yet..'./fixed7.ttf', 11, 0, 0xffffff)
 	this.desktop = desktopKind.create(W, H)
 	this.desktop.pos(0, 0)
