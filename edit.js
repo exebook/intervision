@@ -348,7 +348,8 @@ TEdit.can.commandLineDelete = function() { with (this) {
 }}
 
 TEdit.can.deleteSelected = function () {
-	var A = this.sel.get().a
+	var A = this.sel.get()
+	if (A) A = A.a; else return
 	this.text.deleteText(this.sel)
 	this.sel.clear()
 	this.para = A.y

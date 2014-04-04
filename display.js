@@ -4,9 +4,8 @@ var fontHints = [
 	{ name: 'UbuntuMono-R.ttf',  x: 0, y: -1 },
 	{ name: 'LiberationMono-Regular.ttf', x: 0, y: -1 },
 	{ name: 'FreeMono.ttf', x: 0, y: -1 },
+	{ name: 'fixed7U.ttf', x: 0, y: -1 },
 ]
-
-markerModified = 'x'
 
 function renderView(win, view, atx, aty) {
 	var TEXT = [], COLOR = []

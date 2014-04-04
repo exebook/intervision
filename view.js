@@ -1,3 +1,10 @@
+poorGraphicChar = false
+//◉○◌◈◇◆
+graphChar = { on:'■', off:' ' ,'│': '│', '─': '─', '┴': '┴', '╔':'╔','╝':'╝','╚':'╚','╗':'╗', '═':'═', '║':'║'}
+if (poorGraphicChar)
+graphChar = { on:'x', off:' ' ,'│': '|', '─': '-', '┴': '+', '╔':'-','╝':'-','╚':'-','╗':'-', '═':'=', '║':'|'}
+//markersModified = ' x'//'x◆◉◇◆▪■'
+
 
 require('./palette')
 //	var cnorm = 0, csym = 1, cnum = 2, cstr = 3, cid = 4, ckey = 5
