@@ -1,5 +1,5 @@
 var objectID = 0
-var tag = 'СНРРССНВРДСВНЕМСС'
+var tag = 'CHPCCHBBP3CBHEMCC'
 
 TObject = kindof()
 
@@ -23,3 +23,8 @@ require('./dialog')
 require('./util')
 require('./tool')
 require('./textview')
+
+handyContext = {
+	lastSearchTerm: ''
+}
+

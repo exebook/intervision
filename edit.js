@@ -818,12 +818,14 @@ TEdit.can.commandFindPrev = function() {
 }
 
 TEdit.can.commandFind = function() {
-	var me = this
+	var me = this, query = ''
 	var win = TInputBox.create(45, 'Поиск', 'Искомое', function(text) {
 		me.textToFind = text
 		me.commandFindNext()
 	})
-	if (this.sel.clean() != true) win.input.setText(this.text.getSelText(this.sel))
+	if (this.sel.clean() != true) query = this.text.getSelText(this.sel)
+	else if (handyContext && handyContext.lastSearchQuery) query = handyContext.lastSearchQuery
+	win.input.setText(query)
 	this.getDesktop().showModal(win)
 	return true
 }
