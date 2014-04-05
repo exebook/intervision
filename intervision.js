@@ -23,6 +23,7 @@ require('./dialog')
 require('./util')
 require('./tool')
 require('./textview')
+require('./hexview')
 
 handyContext = {
 	lastSearchTerm: ''
