@@ -57,7 +57,7 @@ TModalTextView.can.onKey = function(hand) {
 			this.actor = this.warn
 			this.repaint()
 		} else {
-			this.warn.hidden = true
+			if (this.warn) this.warn.hidden = true
 			this.actor = this.viewer
 		}
 		return true

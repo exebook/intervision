@@ -113,6 +113,41 @@ backtrace = function() {
 	}
 }
 
+blend = function(color, level, back) { // 0 - full color, 0xf - full back
+	var R = (color & 0xf)
+	var G = (color & 0xf0) >> 4
+	var B = (color & 0xf00) >> 8
+	var r = (back & 0xf)
+	var g = (back & 0xf0) >> 4
+	var b = (back & 0xf00) >> 8
+	function lvl(B, A, level) {
+		if (A < B) return Math.ceil(((B - A) / 16) * level) + A
+		4,15,1
+		return Math.ceil(A - ((A - B) / 16) * (15 - level))
+	}
+	R = lvl(R, r, level)
+	G = lvl(G, g, level)
+	B = lvl(B, b, level)
+//	log(color.toString(16), back.toString(16), R, G, B)
+	return Math.floor((R + (G << 4) + (B << 8)))
+}
+//console.log(blend(0x433, 0, 0xfff).toString(16))
+//console.log(blend(0x433, 1, 0xfff).toString(16))
+//console.log(blend(0x433, 2, 0xfff).toString(16))
+//console.log(blend(0x433, 3, 0xfff).toString(16))
+//console.log(blend(0x433, 4, 0xfff).toString(16))
+//console.log(blend(0x433, 5, 0xfff).toString(16))
+//console.log(blend(0x433, 6, 0xfff).toString(16))
+//console.log(blend(0x433, 7, 0xfff).toString(16))
+//console.log(blend(0x433, 8, 0xfff).toString(16))
+//console.log(blend(0x433, 9, 0xfff).toString(16))
+//console.log(blend(0x433, 10, 0xfff).toString(16))
+//console.log(blend(0x433, 11, 0xfff).toString(16))
+//console.log(blend(0x433, 12, 0xfff).toString(16))
+//console.log(blend(0x433, 13, 0xfff).toString(16))
+//console.log(blend(0x433, 14, 0xfff).toString(16))
+//console.log(blend(0x433, 15, 0xfff).toString(16))
+
 //function testZZ() {
 ////	for (var i = 4; i < 15; i++) {
 //	var t = '12345+abcdef+hello'

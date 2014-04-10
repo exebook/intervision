@@ -57,6 +57,7 @@ THexView.can.track = function() {
 }
 
 THexView.can.loadBuf = function() {
+	if (this.w == undefined) return
 	try {
 		this.fileSize = fs.lstatSync(this.fileName).size
 		var f = fs.openSync(this.fileName, 'r'), N = Math.floor(this.w / this.symWidth) * this.h
@@ -64,7 +65,10 @@ THexView.can.loadBuf = function() {
 		this.buf = new Buffer(N)
 		this.bytesRead = fs.readSync(f, this.buf, 0, N, this.delta)
 		fs.closeSync(f)
-	} catch (e) { log(e) }
+	} catch (e) { 
+		if (f) fs.closeSync(f)
+		log(e)
+	}
 }
 
 THexView.can.draw = function() {

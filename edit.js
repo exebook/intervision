@@ -44,6 +44,7 @@ TEdit.can.init = function() {
 	this.para = 0
 	this.sym = 0
 	this.targetX = 0
+	this.curLineHilite = false
 	this.sel = TSelection.create()
 	this.react(100, keycode.UP, this.lineScroll, {arg:-1})
 	this.react(100, keycode.DOWN, this.lineScroll, {arg:1})
@@ -147,6 +148,7 @@ TEdit.can.draw = function(state) {
 		var px = 0
 		if (match) colorizeMatch(line, match, -1)
 		if (line.part == 0) lineComment = false, keyw = 7
+		var lineHilite = this.curLineHilite && (caret[0] - this.delta == l)
 		for (var x = 0; x < line.s.length; x++) {
 			B = this.pal[1]
 			var X = line.w[x]
@@ -160,6 +162,9 @@ TEdit.can.draw = function(state) {
 				|| (selState == 2 && X >= sel.a[1] && X < sel.b[1]) 
 				|| (selState == 3 && X < sel.b[1])
 			) B = this.pal[4]//, F = this.pal[P + 5]
+
+//			if (lineHilite) B = blend(B, 0x1, 0xfff)
+
 			if (char == '(') { F = this.pal[keyw+braceLevel], braceLevel++ }
 			else if (char == ')') 
 				{ if (braceLevel > 0) braceLevel--, F = this.pal[keyw+braceLevel] }
@@ -167,7 +172,7 @@ TEdit.can.draw = function(state) {
 				{ F = this.pal[keyw+curlyLevel], curlyLevel++ }
 			else if (char == '}') 
 				{ if (curlyLevel > 0) curlyLevel--, F = this.pal[keyw+curlyLevel] }
-			else if (char == '/' && line.s[x + 1] == '/') lineComment = true
+			else if (char == '/' && line.s[x + 1] == '/' && P != lexer.cstr) lineComment = true
 			if (lineComment) F = this.pal[5]
 			if (char == '\t') this.print(
 				X, l, '   ', this.pal[0] | 0xa000, B | 0x0000) //'░'
@@ -178,6 +183,10 @@ TEdit.can.draw = function(state) {
 			var ch = ' '
 			if (sel && sel.a[0] <= Y && sel.b[0] > Y) B = this.pal[4], ch = '¶'
 			this.set(line.w[line.s.length], l, ch, this.pal[0] | 0xa000, B)
+		}
+		if (lineHilite) {
+			B = blend(B, 0x1, 0xfff)
+			for (var X = 0; X < this.w; X++) this.set(X, l, undefined, undefined, B)
 		}
 		Y++
 	}
@@ -433,12 +442,16 @@ TEdit.can.lineScroll = function(arg) {
 	return true
 }
 
-TEdit.can.onKey = function(k) {
-	var R = dnaof(this, k)
-	if (!R && k.char != undefined && k.key != keycode.ESCAPE) {
-		if (k.mod.control == false && k.mod.alt == false) {
+TEdit.can.onKey = function(hand) {
+	if (hand.key == keycode.LEFT_CONTROL) {
+		this.curLineHilite = hand.down
+		this.repaint()
+	}
+	var R = dnaof(this, hand)
+	if (!R && hand.char != undefined && hand.key != keycode.ESCAPE) {
+		if (hand.mod.control == false && hand.mod.alt == false) {
 			if (!this.sel.clean()) this.deleteSelected()
-			var A = this.text.insertTextAt(k.char, this.para, this.sym)
+			var A = this.text.insertTextAt(hand.char, this.para, this.sym)
 			this.para = A.para, this.sym = A.sym
 			this.updateTargetX()
 			this.scrollToView()
