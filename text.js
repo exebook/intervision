@@ -317,6 +317,7 @@ TText.can.getText = function() {
 }
 
 TText.can.setText = function(s) {
+	if (s == undefined) s = ''
 	this.L = s.split('\n')
 	this.undoClear()
 }

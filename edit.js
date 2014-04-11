@@ -161,7 +161,7 @@ TEdit.can.draw = function(state) {
 					(selState == 1 && X >= sel.a[1])
 				|| (selState == 2 && X >= sel.a[1] && X < sel.b[1]) 
 				|| (selState == 3 && X < sel.b[1])
-			) B = this.pal[4]//, F = this.pal[P + 5]
+			) B = this.pal[4], lineHilite = false//, F = this.pal[P + 5]
 
 //			if (lineHilite) B = blend(B, 0x1, 0xfff)
 
