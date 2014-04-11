@@ -20,10 +20,11 @@ TTextView.can.init = function() {
 	this.react(0, keycode.RIGHT, this.moveCursor, {arg:'right'})
 	this.pal = getColor.syntax
 	this.tabSize = 3
+	this.lexer = JSLexer
 }
 
 TTextView.can.coloredPrint = function(x, y, s) {
-	var L = colorizeString(s)
+	var L = this.lexer.colorizeString(s)
 	for (var i = 0; i < s.length; i++) {
 		var F = this.pal[L[i] + 5]
 		this.set(x + i, y, s[i], F, this.pal[1])

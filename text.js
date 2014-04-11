@@ -161,6 +161,7 @@ TText.can.init = function() {
 	this.undoClear()
 	this.modified = false
 	this.colored = true
+	this.lexer = JSLexer
 }
 
 TText.can.size =function(w, h) {
@@ -183,7 +184,7 @@ TText.can.getLines = function(y, count) {
 		var B = breakPara(s, this.w, this.tab)
 		if (h + B.length > y) {
 			var C = []
-			if (this.colored == true) C = colorizeString(s)
+			if (this.colored == true) C = this.lexer.colorizeString(s)
 			var P = getParts(s, C, B)
 		}
 		var x = 0

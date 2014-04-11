@@ -13,9 +13,16 @@ TEdit.can.init = function() {
 	this.name = 'TEdit'
 	this.multiLine = true
 	this.pal = getColor.syntaxBlack
+	if (handyContext && handyContext.lastSearchQuery) this.textToFind = handyContext.lastSearchQuery
+	this.delta = 0
+	this.para = 0
+	this.sym = 0
+	this.targetX = 0
+	this.curLineHilite = false
+	this.sel = TSelection.create()
+
 	this.react(100, keycode['z'], this.commandUndo, {arg:'undo'})
 	this.react(101, keycode['z'], this.commandUndo, {arg:'redo'})
-
 	this.react(100, keycode['m'], this.setMatch, { role:['multi']} )
 	this.react(100, keycode['c'], this.userCopy)
 	this.react(100, keycode['v'], this.userPaste)
@@ -40,12 +47,6 @@ TEdit.can.init = function() {
 	this.react(100, keycode.DELETE, this.commandDeleteWord)
 	this.react(0, keycode.BACK_SPACE, this.commandDeleteBack)
 	this.react(100, keycode.BACK_SPACE, this.commandDeleteWordBack)
-	this.delta = 0
-	this.para = 0
-	this.sym = 0
-	this.targetX = 0
-	this.curLineHilite = false
-	this.sel = TSelection.create()
 	this.react(100, keycode.UP, this.lineScroll, {arg:-1})
 	this.react(100, keycode.DOWN, this.lineScroll, {arg:1})
 	this.react(0, keycode.UP, this.handleCursorKey, {arg:'up', role:['multi']})
@@ -172,7 +173,7 @@ TEdit.can.draw = function(state) {
 				{ F = this.pal[keyw+curlyLevel], curlyLevel++ }
 			else if (char == '}') 
 				{ if (curlyLevel > 0) curlyLevel--, F = this.pal[keyw+curlyLevel] }
-			else if (char == '/' && line.s[x + 1] == '/' && P != lexer.cstr) lineComment = true
+			else if (char == '/' && line.s[x + 1] == '/' && P != this.text.lexer.cstr) lineComment = true
 			if (lineComment) F = this.pal[5]
 			if (char == '\t') this.print(
 				X, l, '   ', this.pal[0] | 0xa000, B | 0x0000) //'░'
@@ -389,9 +390,9 @@ TEdit.can.deleteTo = function(arg) {
 				this.sel.end(this.para, this.sym)
 				s = this.text.getSelText(this.sel)
 				if (prevLength == s.length) break
-				if (s.length == 1) startType = lexer.charType(s[0])
+				if (s.length == 1) startType = this.text.lexer.charType(s[0])
 				else {
-					if (lexer.charType(s[s.length - 1]) != startType) {
+					if (this.text.lexer.charType(s[s.length - 1]) != startType) {
 						this.moveCursor('left')
 						this.sel.end(this.para, this.sym)
 						s = this.text.getSelText(this.sel)
@@ -634,7 +635,7 @@ TEdit.can.onMouse = function(hand) {
 	}
 	
 	else if (hand.button == 1) {
-		if (hand.down) {
+		if (hand.down && this.multiLine == true) {
 			this.getDesktop().mouseCapture = this.onCapture.bind(this)
 			return this.dragScroll('start', hand)
 		}
