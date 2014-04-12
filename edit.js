@@ -120,6 +120,7 @@ function colorizeMatch(line, match, colorIndex) {
 TEdit.can.draw = function(state) {
 	dnaof(this, state)
 	var
+		me = this,
 		caret = this.text.textToScroll(this.para, this.sym),
 		lines = this.text.getLines(this.delta, this.delta + this.h),
 		Y = this.delta, sel = this.sel.get(), selState,
@@ -165,7 +166,13 @@ TEdit.can.draw = function(state) {
 			) B = this.pal[4], lineHilite = false//, F = this.pal[P + 5]
 
 //			if (lineHilite) B = blend(B, 0x1, 0xfff)
-
+function remHere() {
+//	var lex = me.text.lexer, rem = lex.lineComment, b = true
+//	for (var i = 0; i < rem.length; i++) { if (rem[i] != line.s[x + i]) { b = false; break } }
+//	if (b) log('*')
+	return 
+	char == '/' && line.s[x + 1] == '/' && P != me.text.lexer.cstr
+}
 			if (char == '(') { F = this.pal[keyw+braceLevel], braceLevel++ }
 			else if (char == ')') 
 				{ if (braceLevel > 0) braceLevel--, F = this.pal[keyw+braceLevel] }
@@ -173,7 +180,15 @@ TEdit.can.draw = function(state) {
 				{ F = this.pal[keyw+curlyLevel], curlyLevel++ }
 			else if (char == '}') 
 				{ if (curlyLevel > 0) curlyLevel--, F = this.pal[keyw+curlyLevel] }
-			else if (char == '/' && line.s[x + 1] == '/' && P != this.text.lexer.cstr) lineComment = true
+			else {
+				var lex = me.text.lexer, rem = lex.lineComment, brem = true
+				for (var i = 0; i < rem.length; i++) {
+					if (rem[i] != line.s[x + i]) { brem = false; break }
+				}
+				//if (b) log('*')
+				//if (char == '/' && line.s[x + 1] == '/' && P != me.text.lexer.cstr) 
+				if (brem && this.text.lexer.cstr) lineComment = true
+			}
 			if (lineComment) F = this.pal[5]
 			if (char == '\t') this.print(
 				X, l, '   ', this.pal[0] | 0xa000, B | 0x0000) //'░'
@@ -719,16 +734,17 @@ TEdit.can.unindentWith = function(sub) {
 
 TEdit.can.commandComment = function(arg) {
 	//TODO: сделать '//' переменной настроек
+	var REM = this.text.lexer.lineComment
 	if (arg == 'comment') {
 		if (this.sel.clean()) {
 			var last = this.text.L.length - 1
-			if (this.para != last || this.text.L[last].substr(0, 2) != '//')
-			this.text.insertTextAt('//', this.para, 0)
+			if (this.para != last || this.text.L[last].substr(0, 2) != REM)
+			this.text.insertTextAt(REM, this.para, 0)
 			if (this.para != last) this.moveCursor('down')
 		} else
-			this.indentWith('//')
+			this.indentWith(REM)
 	}
-	if (arg == 'uncomment') this.unindentWith('//')
+	if (arg == 'uncomment') this.unindentWith(REM)
 	this.getDesktop().display.caretReset()
 	return true
 }
