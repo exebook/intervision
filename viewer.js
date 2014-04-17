@@ -123,7 +123,12 @@ TFileEdit.can.savePosState = function() {
 }
 
 TFileEdit.can.save = function() {
-	fs.writeFileSync(this.fileName, this.text.getText())
+	try {
+		fs.writeFileSync(this.fileName, this.text.getText())
+	} catch (e) {
+		messageBox(this.getDesktop(), 'Файл "' + this.fileName.split('/').pop() + '" не удалось сохранить, ' + e)
+		return true
+	}
 	this.text.modified = false
 	this.savePosState()
 	return true
