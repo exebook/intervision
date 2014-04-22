@@ -8,7 +8,8 @@ TGroup.can.init = function() {
 TGroup.can.add = function(child) {
 	child.parent = this
 	if (this.items == undefined) this.items = []
-	this.items.push(child)
+	var j = this.items.indexOf(child)
+	if (j < 0) this.items.push(child)
 	this.actor = child
 }
 TGroup.can.remove = function(item) {

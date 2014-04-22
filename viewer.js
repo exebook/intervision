@@ -11,10 +11,73 @@ TModalTextView.can.init = function(Desktop, fileName, viewClass, colors) {
 	this.scrollBar.track = this.viewer.track.bind(this.viewer)
 	this.scrollBar.pal = [this.viewer.pal[0], this.viewer.pal[1]]
 	this.react(100, keycode.ESCAPE, this.close)//Prompt)
+	this.react(100, keycode['o'], this.commandShowOutput)
+	this.react(0, keycode.F9, this.commandRun)
+	this.react(100, keycode.F9, this.commandRunNew)
 	this.actor = this.viewer
+	this.runCommand = ''
+	this.runCwd = (fileName.split('/'))
+	this.runCwd.pop()
+	this.runCwd = this.runCwd.join('/')
 	var syntax = colors
 	this.pal = [syntax[0], syntax[1], syntax[2], syntax[3]]//colors
 	this.fileName = fileName
+}
+
+TModalTextView.can.runDone = function() {
+	this.hideOutput()
+}
+
+TModalTextView.can.commandRun = function() {
+	if (this.runCommand == '') return this.commandRunNew()
+	var o = this.norton.output
+	o.size(this.w - 2, this.h - 2) // НАДО: используй window.getInnerSize // а его пока нет 
+	o.pos(1, 1)
+	var f = this.runDone.bind(this)
+	this.showOutput()
+	o.respawn(this.runCommand, '', this.runCwd, f)
+	return true
+}
+
+TModalTextView.can.commandRunNew = function() {
+	var me = this
+	var w = TInputBox.create(50, 'Выполнить', 'Имя файла и передаваемые аргументы', function(text) {
+		me.runCommand = text
+		if (text != '') me.commandRun()
+		else messageBox(
+			me.getDesktop(), 
+			'Обратите внимание, что вы ничего не ввели и комманда теперь пустая')
+	})
+	w.input.setText('node ' + this.fileName.split('/').pop())
+	this.getDesktop().showModal(w)
+	return true
+}
+
+TModalTextView.can.showOutput = function() {
+	var me = this, o = me.norton.output
+	me.viewer.curLineHilite = false
+	me.hide(me.viewer)
+	me.hide(me.scrollBar)
+	me.add(o)
+	me.actor = undefined
+	o.disabled = true
+}
+
+TModalTextView.can.hideOutput = function() {
+	var me = this, o = me.norton.output
+	o.disabled = false
+	me.remove(me.norton.output)
+	o.parent = me.norton
+	me.show(me.viewer)
+	me.show(me.scrollBar)
+	me.actor = me.viewer
+	me.repaint()
+}
+
+TModalTextView.can.commandShowOutput = function() {
+	if (this.actor == this.viewer) this.showOutput()
+	else this.hideOutput()
+	return true
 }
 
 TModalTextView.can.close = function() {
