@@ -211,7 +211,7 @@ TFileEdit.can.reloadPalette = function() {
 
 function viewFileContinue(yes) {
 	if (yes == false) return
-	this.loadFile()
+	if (this.viewer.name == 'TTextView') this.loadFile()
 	this.size(this.getDesktop().w, this.getDesktop().h)
 	this.getDesktop().showModal(this)
 }
@@ -227,7 +227,7 @@ viewFile = function(Desktop, fileName, viewClass, colors) {
 	}
 	var maxSize = 300000
 	var f = viewFileContinue.bind(t)
-	if (size > maxSize) {
+	if (size > maxSize && ((t.viewer.name == 'TTextView') || (t.viewer.name == 'TEdit')) ) {
 		messageBox(Desktop, 'Файл ' + fileName.split('/').pop() + ' великоват, ' 
 			+ readableSize(size) + ', открыть всё равно?', f)
 	} else f()

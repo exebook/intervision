@@ -12,10 +12,12 @@ THexView.can.init = function(fileName) {
 	this.delta = 0
 	this.react(0, keycode.UP, this.moveCursor, {arg:'up'})
 	this.react(0, keycode.DOWN, this.moveCursor, {arg:'down'})
-//	this.react(0, keycode.HOME, this.moveCursor, {arg:'home'})
-//	this.react(0, keycode.END, this.moveCursor, {arg:'end'})
+	this.react(0, keycode.HOME, this.moveCursor, {arg:'home'})
+	this.react(0, keycode.END, this.moveCursor, {arg:'end'})
 	this.react(0, keycode.PAGE_UP, this.moveCursor, {arg:'pageup'})
 	this.react(0, keycode.PAGE_DOWN, this.moveCursor, {arg:'pagedown'})
+	this.react(100, keycode.PAGE_UP, this.moveCursor, {arg:'%up'})
+	this.react(100, keycode.PAGE_DOWN, this.moveCursor, {arg:'%down'})
 //	this.react(0, keycode.LEFT, this.moveCursor, {arg:'left'})
 //	this.react(0, keycode.RIGHT, this.moveCursor, {arg:'right'})
 	this.react(0, keycode['1'], this.setBase, {arg:16})
@@ -74,7 +76,7 @@ THexView.can.loadBuf = function() {
 THexView.can.draw = function() {
 	var charList = '`~1!2@3#4$5%6^7&8*9(0)-_=+QWERTYUIOP{}qwertyuiop[]azsxdcfvgbhnjmk,l.;/\'AZSXDCFVGBHNJMK<L>:?" '
 	dnaof(this)
-	log(this.bytes)
+//	log(this.bytes)
 	var x = 0, y = 0, w = this.symWidth
 	var ch, num, F, C1 = this.pal[0], C2 = this.pal[2]
 	for (var i = 0; i < this.bytesRead; i++) {
@@ -99,23 +101,28 @@ THexView.can.draw = function() {
 }
 
 THexView.can.moveCursor = function(arg) { with (this) {
-	var N = Math.floor(w / symWidth), H = (N * h) / rows
+	var N = Math.floor(w / symWidth), H = (N * h) / rows, block = ~~(fileSize / 100)
  	if (arg == 'up') {
 		delta -= N
 		if (delta < 0) delta = 0
 	} else if (arg == 'down') {
 		if (delta < fileSize - N) delta += N
 	} else if (arg == 'home') {
-//		delta = 0
-//		x = 0
+		delta = 0
+		x = 0
 	} else if (arg == 'end') {
-//		delta = lines.length - h + 1
-//		if (delta < 0) delta = 0
+		delta = fileSize - H
+		if (delta < 0) delta = 0
 	} else if (arg == 'pageup') {
 		delta -= H
 		if (delta < 0) delta = 0
 	} else if (arg == 'pagedown') {
 		if (delta < fileSize - H) delta += H
+	} else if (arg == '%up') {
+		delta -= block
+		if (delta < 0) delta = 0
+	} else if (arg == '%down') {
+		if (delta < fileSize - block) delta += block; else moveCursor('end')
 	} else if (arg == 'left') {
 //		navx -= 5
 //		if (navx < 0) navx = 0
