@@ -30,6 +30,7 @@ TModalTextView.can.runDone = function() {
 
 TModalTextView.can.commandRun = function() {
 	if (this.runCommand == '') return this.commandRunNew()
+	this.viewer.save()
 	var o = this.norton.output
 	o.size(this.w - 2, this.h - 2) // НАДО: используй window.getInnerSize // а его пока нет 
 	o.pos(1, 1)
