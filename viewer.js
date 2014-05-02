@@ -169,6 +169,7 @@ TFileEdit.can.init = function(fileName) {
 	this.fileName = fileName
 	this.text.setText(fs.readFileSync(fileName).toString())
 	if (this.fileName.indexOf('.asm') > 0) this.text.lexer = ASMLexer
+	if (this.fileName.indexOf('.sh') > 0) this.text.lexer = ShellLexer
 	var N = findFileMem(fileName)
 	if (N) {
 		this.para = N.para, this.sym = N.sym, this.delta = N.delta
