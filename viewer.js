@@ -57,7 +57,6 @@ TModalTextView.can.commandRunNew = function() {
 		me.runCommand = text
 		var N = findFileCmd(me.fileName)
 		if (N) N.command = text; else fileRunCommands.push({name: me.fileName, command: text})
-		console.log('COMMANDS: ', fileRunCommands)
 
 		if (text != '') me.commandRun()
 		else messageBox(
