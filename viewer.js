@@ -28,8 +28,19 @@ TModalTextView.can.runDone = function() {
 	this.hideOutput()
 }
 
+var fileRunCommands = []
+function findFileCmd(name) {
+	var n = fileRunCommands
+	for (var i = 0; i < n.length; i++) if (n[i].name == name) return n[i]
+}
+
 TModalTextView.can.commandRun = function() {
-	if (this.runCommand == '') return this.commandRunNew()
+	if (this.runCommand == '') {
+		var N = findFileCmd(this.fileName)
+		if (N) {
+			this.runCommand = N.command
+		} else return this.commandRunNew()
+	}
 	this.viewer.save()
 	var o = this.norton.output
 	o.size(this.w - 2, this.h - 2) // НАДО: используй window.getInnerSize // а его пока нет 
@@ -44,6 +55,10 @@ TModalTextView.can.commandRunNew = function() {
 	var me = this
 	var w = TInputBox.create(50, 'Выполнить', 'Имя файла и передаваемые аргументы', function(text) {
 		me.runCommand = text
+		var N = findFileCmd(me.fileName)
+		if (N) N.command = text; else fileRunCommands.push({name: me.fileName, command: text})
+		console.log('COMMANDS: ', fileRunCommands)
+
 		if (text != '') me.commandRun()
 		else messageBox(
 			me.getDesktop(), 
@@ -168,7 +183,8 @@ TFileEdit.can.init = function(fileName) {
 	dnaof(this)
 	this.fileName = fileName
 	this.text.setText(fs.readFileSync(fileName).toString())
-	if (this.fileName.indexOf('.asm') > 0) this.text.lexer = ASMLexer
+	if (this.fileName.indexOf('.asm') > 0
+		|| this.fileName.indexOf('.inc') > 0) this.text.lexer = ASMLexer
 	if (this.fileName.indexOf('.sh') > 0) this.text.lexer = ShellLexer
 	var N = findFileMem(fileName)
 	if (N) {
