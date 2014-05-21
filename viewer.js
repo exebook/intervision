@@ -14,6 +14,7 @@ TModalTextView.can.init = function(Desktop, fileName, viewClass, colors) {
 	this.react(100, keycode['o'], this.commandShowOutput)
 	this.react(0, keycode.F9, this.commandRun)
 	this.react(100, keycode.F9, this.commandRunNew)
+	this.react(100, keycode['c'], this.commandKill)
 	this.actor = this.viewer
 	this.runCommand = ''
 	this.runCwd = (fileName.split('/'))
@@ -48,6 +49,12 @@ TModalTextView.can.commandRun = function() {
 	var f = this.runDone.bind(this)
 	this.showOutput()
 	o.respawn(this.runCommand, '', this.runCwd, f)
+	return true
+}
+
+TModalTextView.can.commandKill = function() {
+	var o = this.norton.output
+	o.kill()
 	return true
 }
 
