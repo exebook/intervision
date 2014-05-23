@@ -69,7 +69,8 @@ if (this.items == undefined) log(this.name)
 }
 
 TGroup.can.onMouse = function(hand) {
-	if (!hand.down) { // верх получает тот же кто и низ
+	var xdown = hand.down || hand.button == 3 // колёсико всегда фокусит
+	if (!xdown) { // верх получает тот же кто и низ
 		var n = this.onMouse.prev
 		if (n) return n.onMouse(hand.child(n))
 		return
@@ -80,7 +81,7 @@ TGroup.can.onMouse = function(hand) {
 //	log('mouse', n == undefined ? 'empty' : n.name)
 	if (n != undefined) {
 		var ret = this.actor != n
-		if (hand.down) if (n.disabled != true) this.actor = n
+		if (xdown) if (n.disabled != true) this.actor = n
 		if (n.onMouse != undefined) {
 			this.onMouse.prev = n
 			if (n.onMouse(hand.child(n))) ret = true
