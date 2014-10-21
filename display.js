@@ -30,23 +30,28 @@ TGLXVision = kindof(TGLXWin)
 
 TGLXVision.can.init = function(fontPath, fontSize, desktopKind, W, H) {
 	var hintX, hintY
-	for (var i = 0; i < fontHints.length; i++)
-		if (fontPath.indexOf('/'+fontHints[i].name) >= 0)
-			hintX = fontHints[i].x, hintY = fontHints[i].y
-	dnaof(this, undefined, fontPath, fontSize, hintX, hintY)//fonts[f].extra_x, fonts[f].tune_y)
-	this.fnt = this.applyFont()// not implemented at all yet..'./fixed7.ttf', 11, 0, 0xffffff)
-	this.desktop = desktopKind.create(W, H)
-	this.desktop.pos(0, 0)
-	this.desktop.size(W, H)
-	this.desktop.display = this
-	var me = this
-	this.desktop.repaint = function() { me.repaint() }
-	this.caretFlash = false
-	this.caretVertical = false
-	this.name = 'TGLXVision'
-	this.caretReset()
-	this.setXYWH(undefined, undefined, W * this.fnt[0], H * this.fnt[1])
-	this.setSizeSteps(this.fnt[0] * 2, this.fnt[1])
+	
+	if (!fontPath) {
+		console.trace('Путь к шрифтам не найден. Аргументы функции: ', arguments)
+	} else {
+		for (var i = 0; i < fontHints.length; i++)
+			if (fontPath.indexOf('/'+fontHints[i].name) >= 0)
+				hintX = fontHints[i].x, hintY = fontHints[i].y
+		dnaof(this, undefined, fontPath, fontSize, hintX, hintY)//fonts[f].extra_x, fonts[f].tune_y)
+		this.fnt = this.applyFont()// not implemented at all yet..'./fixed7.ttf', 11, 0, 0xffffff)
+		this.desktop = desktopKind.create(W, H)
+		this.desktop.pos(0, 0)
+		this.desktop.size(W, H)
+		this.desktop.display = this
+		var me = this
+		this.desktop.repaint = function() { me.repaint() }
+		this.caretFlash = false
+		this.caretVertical = false
+		this.name = 'TGLXVision'
+		this.caretReset()
+		this.setXYWH(undefined, undefined, W * this.fnt[0], H * this.fnt[1])
+		this.setSizeSteps(this.fnt[0] * 2, this.fnt[1])
+	}
 }
 
 TGLXVision.can.caretDraw= function() {
