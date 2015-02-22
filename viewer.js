@@ -1,6 +1,27 @@
+themeList = ['Green', 'Cyan', 'White', 'Black', 'Green2', 'Pink1', 'Purple', 'Yellow', 'Blue1', 'Atari1']
+
+readColorConfig = function() {
+	var cfg = expandPath('~/.deodar/conf.js'), R = 'syntaxWhite'
+	if (fs.existsSync(cfg)) {
+		cfg = fs.readFileSync(cfg).toString()
+		var config = eval(cfg)
+		R = config.editTheme
+	}
+	for (var i = 0; i < 100; i++) {
+		if ('syntax' + themeList[0] == R) break
+	}
+	return getColor[R]
+}
+
+saveColorConfig = function(syntax) {
+	var cfg = expandPath('~/.deodar/conf.js')
+	fs.writeFileSync(cfg, ('x={editTheme:"'+syntax+'"}'))
+}
+
 TModalTextView = kindof(TWindow)
 TModalTextView.can.init = function(Desktop, fileName, viewClass, colors) {
 	dnaof(this)
+	var colors = readColorConfig()
 	this.title = fileName
 	this.scrollBar = TScrollBar.create(colors)
 	this.add(this.scrollBar)
@@ -53,9 +74,11 @@ TModalTextView.can.commandRun = function() {
 }
 
 TModalTextView.can.commandKill = function() {
-	var o = this.norton.output
-	o.kill()
-	return true
+	if (this.actor == undefined) { // only if console focused
+		var o = this.norton.output
+		o.kill()
+		return true
+	}
 }
 
 TModalTextView.can.commandRunNew = function() {
@@ -70,7 +93,9 @@ TModalTextView.can.commandRunNew = function() {
 			me.getDesktop(), 
 			'Обратите внимание, что вы ничего не ввели и комманда теперь пустая')
 	})
-	w.input.setText('node ' + this.fileName.split('/').pop())
+	var s = this.runCommand
+	if (s == '') s = 'node ' + this.fileName.split('/').pop()
+	w.input.setText(s)
 	this.getDesktop().showModal(w)
 	return true
 }
@@ -103,6 +128,10 @@ TModalTextView.can.commandShowOutput = function() {
 }
 
 TModalTextView.can.close = function() {
+	if (this.actor == undefined) { // console output active
+		this.hideOutput()
+		return
+	}
 	if (this.viewer.isModified != undefined) this.viewer.savePosState()
 	dnaof(this)
 }
@@ -119,8 +148,10 @@ TModalTextView.can.closePrompt = function() {
 }
 
 TModalTextView.can.onKey = function(hand) {
-	if (hand.plain && hand.key == keycode.ESCAPE && hand.physical) { // необычное решение
-		if (this.viewer.isModified == undefined || this.viewer.isModified() == false) {
+	if (hand.plain && hand.key == keycode.ESCAPE && hand.physical) {
+		// необычное решение
+		if (this.viewer.isModified == undefined 
+		 || this.viewer.isModified() == false) {
 			if (hand.down) this.close();
 			return true
 		}
@@ -200,6 +231,7 @@ TFileEdit.can.init = function(fileName) {
 	this.react(0, keycode.F2, this.save)
 	this.react(100, keycode['s'], this.save)
 	this.react(100, keycode['p'], this.reloadPalette)
+	this.react(101, keycode['t'], this.nextTheme)
 }
 
 TFileEdit.can.savePosState = function() {
@@ -225,10 +257,24 @@ TFileEdit.can.isModified = function() {
 	return this.text.modified == true
 }
 
+TFileEdit.can.nextTheme = function() {
+	readColorConfig()
+	themeList.push(themeList.shift())
+	theme.editor = 'syntax' + themeList[0]
+	this.reloadPalette()
+	saveColorConfig(theme.editor)
+	return true
+}
+
 TFileEdit.can.reloadPalette = function() {
 	this.save()
 	require('./palette')
 	this.pal = getColor[theme.editor]
+	var syntax = this.pal
+	this.parent.pal = [syntax[0], syntax[1], syntax[2], syntax[3]]
+	this.parent.scrollBar.pal =
+		[syntax[0], syntax[1], syntax[2], syntax[3]]
+	this.parent.draw({active:true,focused:true})
 	this.repaint()
 	return true
 }

@@ -6,7 +6,8 @@ TTextView = kindof(TView)
 TTextView.can.init = function() {
 	dnaof(this)
 	this.lines = []
-	for (var i = 0; i < 40; i++) this.lines.push('')//'* * * * * * ' + i + ' * * * * * *')
+	for (var i = 0; i < 40; i++) this.lines.push('')
+	//'* * * * * * ' + i + ' * * * * * *')
 	this.name = 'TTextView'
 	this.d = 0
 	this.navx = 0
@@ -21,6 +22,7 @@ TTextView.can.init = function() {
 	this.pal = getColor.syntax
 	this.tabSize = 3
 	this.lexer = JSLexer
+	this.pal = [0xfff, 0xf00, 0x0f0, 0x00f]//colors
 }
 
 TTextView.can.coloredPrint = function(x, y, s) {
@@ -76,6 +78,6 @@ TTextView.can.scrollToBottom = function() {
 }
 
 TTextView.can.track = function() {
-	return { pos: this.d, size: this.lines.length, page: this.h }
+	return { position: this.d, size: this.lines.length, page: this.h }
 }
 

@@ -55,7 +55,7 @@ THexView.can.setMode = function(arg) {
 }
 
 THexView.can.track = function() {
-	return { size: this.fileSize, pos: this.delta }
+	return { size: this.fileSize, position: this.delta }
 }
 
 THexView.can.loadBuf = function() {

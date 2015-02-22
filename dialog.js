@@ -62,13 +62,50 @@ TInputBox.can.init = function(width, title, message, callback) {
 	this.msg = TLabel.create(); this.msg.title = message + ':'
 	this.add(this.msg, width - 10, 1); this.addRow()
 	this.input = TInput.create(''); this.add(this.input, width - 10, 1); this.addRow(); this.addRow()
-	this.ok = TButton.create(keycode.ENTER, 'Создать', function() { 
+	this.ok = TButton.create(keycode.ENTER, 'Далее', function() { 
 		me.close(); callback(me.input.getText()); return true })
 	this.add(this.ok, 10, 1)
 	this.cancel = TButton.create(keycode.ESCAPE, 'Отмена', function() { this.close(); return true })
 	this.add(this.cancel, 10, 1)
 	this.size(this.w, this.addY + 3)
 	this.actor = this.input
+}
+
+TReplaceBox = kindof(TDialog)
+TReplaceBox.can.init = function(width, title, msg1, msg2, callback) {
+	dnaof(this, width, 1)
+	var me = this
+	this.title = title
+	
+	this.msg = TLabel.create(); this.msg.title = msg1 + ':'
+	this.add(this.msg, width - 10, 1); this.addRow()
+	this.search = TInput.create('');
+	this.add(this.search, width - 10, 1); this.addRow()
+	
+	this.msg2 = TLabel.create(); this.msg2.title = msg2 + ':'
+	this.add(this.msg2, width - 10, 1); this.addRow()
+	this.replace = TInput.create('');
+	this.add(this.replace, width - 10, 1); this.addRow(); this.addRow()
+	
+	function tab(dest) {
+		me.actor = dest
+		this.getDesktop().display.caretReset()
+		return true
+	}
+	this.search.react(0, keycode.TAB, tab, {arg:this.replace})
+	this.replace.react(0, keycode.TAB, tab, {arg:this.search})
+
+	this.ok = TButton.create(keycode.ENTER, 'Создать', function() { 
+		me.close(); 
+		callback(me.search.getText(), me.replace.getText()); 
+		return true
+	})
+	this.add(this.ok, 10, 1)
+	this.cancel = TButton.create(keycode.ESCAPE, 'Отмена', 
+		function() { this.close(); return true })
+	this.add(this.cancel, 10, 1)
+	this.size(this.w, this.addY + 3)
+	this.actor = this.search
 }
 
 TExitSaveCancel = kindof(TDialog)
@@ -139,7 +176,8 @@ messageBox = function(desktop, message, callback) {
 	$.title = 'К сведению'
 	$.callback = callback
 	$.addRow();
-	$.msg = TLabel.create(); $.msg.title = message; $.add($.msg, message.length, 1); $.addRow();$.addRow();
+	$.msg = TLabel.create(); $.msg.title = message; 
+	$.add($.msg, message.length, 1); $.addRow();$.addRow();
 	var ok = TButton.create(keycode.ENTER, 'Ясно', function() {
 		$.close()
 		if ($.callback != undefined) $.callback(true)

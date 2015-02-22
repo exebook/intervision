@@ -19,6 +19,7 @@ TView.can.init = function() {
 	dnaof(this)
 	this.name = 'TView'
 	this.pal = getColor.view
+	this.ux = 0, this.uy = 0
 }
 TView.can.getDesktop = function() {
 	return this.parent.getDesktop()
@@ -33,15 +34,49 @@ TView.can.size = function(w, h) {
 }
 
 TView.can.pos = function(x, y) {
+//	if (this.parent && this.parent.x) {
+//	this.ux = x + this.parent.x
+//	this.uy = y + this.parent.y
+//	}
+//	else {
+// 	this.ux = x, this.uy = y
+//		console.log('PARENTLES POS', this.name, x,y)
+//		console.log(new Error().stack)
+//	//	process.exit()
+//	}
+//	this.x = x, this.y = y
+//
+//	return
 	this.x = x, this.y = y
 }
 
+//var DATA = []
+
 TView.can.get = function (x, y) {
+//	if (DATA[y] == undefined) return undefined
+//	return DATA[y][x]
+//
 	if (this.data[y] == undefined) return undefined
 	return this.data[y][x]
 }
 
+sets = {}
 TView.can.set = function (x, y, ch, fg, bg) {
+//if (this.x == undefined) {console.log(this.name)
+//process.exit() }
+//	if (sets[this.name] == undefined) sets[this.name] = 0
+//	sets[this.name]++
+//	if (this.name != 'TEdit') return
+//	console.log(this.x,this.y,x,y)
+//if (Math.random() < 0.7) return
+//	y += this.uy
+//	if (DATA[y] == undefined) DATA[y] = []
+//	if (o == undefined) o = { }
+//	if (ch != undefined) o.ch = ch
+//	if (fg != undefined) o.fg = fg
+//	if (bg != undefined) o.bg = bg
+//	DATA[y][this.ux+x] = o
+//	return
 	if (this.data[y] == undefined) this.data[y] = []
 	var o = this.data[y][x]
 	if (o == undefined) o = { }
@@ -55,6 +90,7 @@ TView.can.render = function() {
 	if (this.caret != undefined) {
 		this.parent.caret = { x:this.caret.x + this.x, y:this.caret.y + this.y, color: this.caret.color }
 	}
+//return
 	for (var y = 0; y < this.h; y++) {
 		for (var x = 0; x < this.w; x++) {
 			var o = this.get(x, y)

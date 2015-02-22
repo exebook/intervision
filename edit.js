@@ -20,29 +20,35 @@ TEdit.can.init = function() {
 	this.targetX = 0
 	this.curLineHilite = false
 	this.sel = TSelection.create()
+	this.lineClipboard = []
 
-	this.react(100, keycode['z'], this.commandUndo, {arg:'undo'})
-	this.react(101, keycode['z'], this.commandUndo, {arg:'redo'})
-	this.react(100, keycode['m'], this.setMatch, { role:['multi']} )
-	this.react(100, keycode['c'], this.userCopy)
-	this.react(100, keycode['v'], this.userPaste)
-	this.react(100, keycode['x'], this.userCut)
-	this.react(100, keycode.INSERT, this.userCopy)
-	this.react(1, keycode.INSERT, this.userPaste)
-	this.react(1, keycode.DELETE, this.userCut)
-	this.react(100, keycode['d'], this.commandLineDelete, { role:['multi'] })
-	this.react(0, keycode.ENTER, this.commandEnter, { role:['multi'] })
-	this.react(100, keycode['g'], this.commandGoToLine, { role:['multi'] })
-	this.react(100, keycode['f'], this.commandFind, { role:['multi']})
-	this.react(100, keycode['l'], this.commandFindNext, { role:['multi'] })
-	this.react(101, keycode['l'], this.commandFindPrev, { role:['multi'] })
-	this.react(101, keycode['c'], this.commandComment, {arg:'comment'})
-	this.react(101, keycode['x'], this.commandComment, {arg:'uncomment'})
-	this.react(0, keycode.F3, this.commandFindNext, { role:['multi'] })
-	this.react(1, keycode.F3, this.commandFindPrev, { role:['multi'] })
+with (this) with (keycode) {
+	react(100, keycode['z'], commandUndo, {arg:'undo'})
+	react(101, keycode['z'], commandUndo, {arg:'redo'})
+	react(100, keycode['m'], setMatch, { role:['multi']} )
+	react(100, keycode['c'], userCopy)
+	react(100, keycode['v'], userPaste)
+	react(100, keycode['x'], userCut)
+	react(100, keycode.INSERT, userCopy)
+	react(1, keycode.INSERT, userPaste)
+	react(1, keycode.DELETE, userCut)
+	react(100, keycode['d'], commandLineDelete, { role:['multi'] })
+	react( 10, keycode['d'], commandLineBack, { role:['multi'] })
+	react(0, keycode.ENTER, commandEnter, { role:['multi'] })
+	react(100, keycode['g'], commandGoToLine, { role:['multi'] })
+	react(100, keycode['f'], commandFind, { role:['multi']})
+	react(100, keycode['h'], commandReplace, { role:['multi']})
+	react(100, keycode['l'], commandFindNext, { arg:true, role:['multi'] })
+	react(101, keycode['l'], commandFindPrev, { role:['multi'] })
+	react(101, keycode['c'], commandComment, {arg:'comment'})
+	react(101, keycode['x'], commandComment, {arg:'uncomment'})
+	react(0, keycode.F3, commandFindNext, { arg:true, role:['multi'] })
+	react(1, keycode.F3, commandFindPrev, { role:['multi'] })
 
-	this.react(0, keycode.TAB, this.commandTab, { arg: 'indent', role:['multi'] } )
-	this.react(1, keycode.TAB, this.commandTab, { arg: 'unindent', role:['multi'] } )
+	react(101, keycode.TAB, commandTab, { arg: 'convert', role:['multi'] } )
+	react(0, keycode.TAB, commandTab, { arg: 'indent', role:['multi'] } )
+	react(1, keycode.TAB, commandTab, { arg: 'unindent', role:['multi'] } )
+}
 	this.react(0, keycode.DELETE, this.commandDelete)
 	this.react(100, keycode.DELETE, this.commandDeleteWord)
 	this.react(0, keycode.BACK_SPACE, this.commandDeleteBack)
@@ -135,7 +141,7 @@ TEdit.can.draw = function(state) {
 	if (state.focused && caret) F = this.pal[2], this.caret = { x: caret[1], y: caret[0] - this.delta, color: this.pal[0] }
 	else delete this.caret
 	var braceLevel = 0, curlyLevel = 0, B, F
-	var lineComment = false, keyw = 7
+	var lineComment = false, keyw = keyw0 = 10//7-ok
 	for (var l = 0; l < lines.length; l++) {
 		var line = lines[l]
 		if (match) colorizeMatch(line, match)
@@ -149,7 +155,7 @@ TEdit.can.draw = function(state) {
 		}
 		var px = 0
 		if (match) colorizeMatch(line, match, -1)
-		if (line.part == 0) lineComment = false, keyw = 7
+		if (line.part == 0) lineComment = false, keyw = keyw0
 		var lineHilite = this.curLineHilite && (caret[0] - this.delta == l)
 		for (var x = 0; x < line.s.length; x++) {
 			B = this.pal[1]
@@ -159,11 +165,12 @@ TEdit.can.draw = function(state) {
 				B = 0xff, F = 0x800
 				if (this.match) B = 0x88f, F = 0x0cc
 			} else F = this.pal[P + 5]
+			var selc = false
 			if 	(selState == 5 || 
 					(selState == 1 && X >= sel.a[1])
 				|| (selState == 2 && X >= sel.a[1] && X < sel.b[1]) 
 				|| (selState == 3 && X < sel.b[1])
-			) B = this.pal[4], lineHilite = false//, F = this.pal[P + 5]
+			) B = this.pal[4], lineHilite = false, selc = true//, F = this.pal[P + 5]
 
 //			if (lineHilite) B = blend(B, 0x1, 0xfff)
 function remHere() {
@@ -178,8 +185,10 @@ function remHere() {
 				{ if (braceLevel > 0) braceLevel--, F = this.pal[keyw+braceLevel] }
 			else if (char == '{') 
 				{ F = this.pal[keyw+curlyLevel], curlyLevel++ }
-			else if (char == '}') 
-				{ if (curlyLevel > 0) curlyLevel--, F = this.pal[keyw+curlyLevel] }
+			else if (char == '}') { 
+				if (curlyLevel > 0) curlyLevel--, 
+					F = this.pal[keyw+curlyLevel]
+			}
 			else {
 				var lex = me.text.lexer, rem = lex.lineComment, brem = true
 				for (var i = 0; i < rem.length; i++) {
@@ -190,8 +199,12 @@ function remHere() {
 				if (brem && this.text.lexer.cstr) lineComment = true
 			}
 			if (lineComment) F = this.pal[5]
-			if (char == '\t') this.print(
-				X, l, '   ', this.pal[0] | 0xa000, B | 0x0000) //'░'
+			if (char == '\t') {
+				var tabc = '   '
+				if (sel && selc) B = this.pal[4], tabc = line.s[x+1]=='\t'?' → ':' ⇥ '//
+				this.print(
+					X, l, tabc, this.pal[0] | 0xa000, B | 0x0000) //'░'
+			}
 			else this.set(X, l, char, F, B), px++
 		}
 		if (line.last) { // show line end marker
@@ -351,6 +364,15 @@ TEdit.can.handleCursorKey = function(arg) { with (this) {
 }}
 
 
+TEdit.can.commandLineBack = function() { with (this) {
+	sel.clear()
+	moveCursor('home')
+	var s = lineClipboard.pop()
+	if (lineClipboard.length == 0) lineClipboard.push(s)
+	insertText(s)
+	moveCursor('up')
+}}
+
 TEdit.can.commandLineDelete = function() { with (this) {
 	var H = text.getHeight()
 	var A = text.textToScroll(para, sym), B = [A[0] + 1, 0]
@@ -364,6 +386,9 @@ TEdit.can.commandLineDelete = function() { with (this) {
 	B = text.scrollToText(B[0], B[1])
 	sel.start(A[0], A[1])
 	sel.end(B[0], B[1])
+	this.lineClipboard.push(text.getSelText(sel))
+	if (lineClipboard.length > 20) lineClipboard.shift()
+
 	sym = A[1]
 	text.deleteText(sel)
 	sel.clear()
@@ -685,7 +710,7 @@ TEdit.can.commandUndo = function(arg) {
 }
 
 TEdit.can.track = function() {
-	return { size: this.text.getHeight() - this.h + 3, pos: this.delta }
+	return { size: this.text.getHeight() - this.h + 3, position: this.delta }
 }
 
 TEdit.can.indentWith = function(sub) {
@@ -749,7 +774,75 @@ TEdit.can.commandComment = function(arg) {
 	return true
 }
 
+TEdit.can.convertSpacesToTab = function() {
+	if (this.sel.clean()) return
+	var S = this.sel.get()
+	var a = S.a.y, b = S.b.y
+	if (S.b.x == 0) b--
+	var steps = {}
+	for (var y = a; y <= b; y++) {
+		var s = this.text.L[y].replace('\t', '   ')
+		var spaces = 0
+		for (var i = 0; i < s.length; i++) if (s[i] == ' ') spaces++; else break
+		steps[spaces] = true
+	}
+	var sorted = Object.keys(steps).sort(function(a,b){return a-b})
+	for (var i = 0; i < sorted.length; i++) steps[sorted[i]] = i
+	
+	this.text.undoBegin()
+	for (var y = a; y <= b; y++) this.text.changeLine(y, function(s) {
+		s = s.replace('\t', '   ')
+		var spaces = 0
+		for (var i = 0; i < s.length; i++) if (s[i] == ' ') spaces++; else break
+		s = s.substr(spaces, s.length)
+		for (var i = 0; i < steps[spaces]; i++) s = '\t'+s
+		console.log(s)
+		return s
+	})
+	this.text.undoEnd()
+}
+
+TEdit.can.tabCompletion = function() {
+	if (!this.sel.clean()) return
+	var a = this.para, b = this.sym
+	var s = this.text.L[a], t = ''
+	while (--b >= 0) {
+		var c = s[b], 
+			ok = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') 
+			|| (c >= 'A' && c <= 'Z') || c == '.'
+		if (ok) t = c + t; else break
+		if (c == '.') break
+	}
+	if (t == '') return
+//	var cfg = require('path').dirname(require.main.filename) 
+//		+ '/tabsnippets.js'
+
+	var cfg = expandPath('~/.deodar/tabsnippets.js')
+	if (fs.existsSync(cfg) == false) return false
+
+	cfg = require(cfg)
+	ok = cfg[t]
+	if (!ok && t[0] == '.') {
+		t = t.substr(1)
+	}
+	if (cfg[t]) {
+		var snip = cfg[t]
+		T = TSelection.create()
+		T.start(this.para, this.sym)
+		T.end(this.para, this.sym - t.length)
+		this.text.deleteText(T)
+		this.text.insertTextAt(snip, this.para, this.sym - t.length)
+		this.sym = this.sym - t.length + snip.length
+		return true
+	}
+}
+
 TEdit.can.commandTab = function(arg) {
+	if (this.tabCompletion()) return true
+	if (arg == 'convert') {
+		console.log('spaceToTab conversion')
+		this.convertSpacesToTab()
+	}
 	if (arg == 'indent') {
 		if (this.sel.clean()) {
 			this.insertText('\t')
@@ -792,34 +885,6 @@ TEdit.can.commandGoToLine = function() {
 	return true
 }
 
-TEdit.can.commandFindNext = function() {
-	var me = this
-	if (me.textToFind == undefined) return true
-	var t = me.text.L, c = t.length, match
-	for (var p = me.para + 1; p < c; p++) {
-		var sym = t[p].indexOf(me.textToFind)
-		if (sym >= 0) {
-			match = { para:p, sym: sym }
-			break
-		}
-	}
-	if (match == undefined) for (var p = 0; p <= me.para; p++) {
-		var sym = t[p].indexOf(me.textToFind)
-		if (sym >= 0) {
-			match = { para:p, sym: sym }
-			break
-		}
-	}
-	if (match) {
-		me.para = match.para, me.sym = match.sym
-		me.sel.start(me.para, me.sym)
-		me.sel.end(me.para, me.sym + me.textToFind.length)
-		me.scrollToView()
-		this.getDesktop().display.caretReset()
-	}
-	return true
-}
-
 TEdit.can.commandFindPrev = function() {
 	var me = this
 	var t = me.text.L, c = t.length, match
@@ -848,14 +913,96 @@ TEdit.can.commandFindPrev = function() {
 }
 
 TEdit.can.commandFind = function() {
+console.log('comand Find')
 	var me = this, query = ''
 	var win = TInputBox.create(45, 'Поиск', 'Искомое', function(text) {
+		if (handyContext == undefined) handyContext = {}
+		handyContext.lastSearchQuery = text
 		me.textToFind = text
+		me.replace = undefined
 		me.commandFindNext()
 	})
-	if (this.sel.clean() != true) query = this.text.getSelText(this.sel)
-	else if (handyContext && handyContext.lastSearchQuery) query = handyContext.lastSearchQuery
+	win.ok.title = 'Искать'
+	if (this.sel.clean() != true) { 
+		console.log('query from selection')
+		query = this.text.getSelText(this.sel)
+	}
+	else if (handyContext && handyContext.lastSearchQuery) {
+		console.log('query from handy context')
+		query = handyContext.lastSearchQuery
+	} else if (me.textToFind) { 
+		query = me.textToFind 
+		console.log('query from textToFind')
+	}
 	win.input.setText(query)
+	this.getDesktop().showModal(win)
+	return true
+}
+
+
+TEdit.can.commandFindNext = function(next) {
+//TODO: F3 in edit box = enter
+	var me = this
+	if (me.textToFind == undefined) return true
+	if (next && me.replace != undefined) {
+		var cur = me.text.getSelText(me.sel)
+		if (cur == me.textToFind) {
+			me.text.deleteText(me.sel)
+			var S = me.sel.get()
+			me.sel.clear()
+			me.text.insertTextAt(me.replace, S.a.y, S.a.x)
+		}
+	}
+	var t = me.text.L, c = t.length, match, S = me.sel.get()
+	if (S) { me.sym = S.b.x }
+	var sym = t[me.para].indexOf(me.textToFind, me.sym)
+	if (sym >= 0) match = { para:me.para, sym: sym }
+	if (match == undefined) for (var p = me.para + 1; p < c; p++) {
+		var sym = t[p].indexOf(me.textToFind)
+		if (sym >= 0) {
+			match = { para:p, sym: sym }
+			break
+		}
+	}
+	if (match == undefined) for (var p = 0; p <= me.para; p++) {
+		var sym = t[p].indexOf(me.textToFind)
+		if (sym >= 0) {
+			match = { para:p, sym: sym }
+			break
+		}
+	}
+	if (match) {
+		me.para = match.para, me.sym = match.sym
+		me.sel.start(me.para, me.sym)
+		me.sel.end(me.para, me.sym + me.textToFind.length)
+		me.scrollToView()
+		this.getDesktop().display.caretReset()
+	}
+	return true
+}
+
+TEdit.can.commandReplace = function() {
+	var me = this, query = ''
+	var win = TReplaceBox.create(45, 'Замена', 'Искать', 'Заменить на',
+	function(find, repl) {
+		if (handyContext == undefined) handyContext = {}
+		handyContext.lastSearchQuery = find
+		handyContext.lastReplaceString = repl
+		//TODO: move me.textToFind/me.replace to handyContext
+		me.replace = repl
+		me.textToFind = find
+		me.commandFindNext()
+	})
+	win.ok.title = 'Искать(F3)'
+	if (this.sel.clean() != true) { 
+		query = this.text.getSelText(this.sel)
+	}
+	else if (handyContext && handyContext.lastSearchQuery) {
+		query = handyContext.lastSearchQuery
+		me.replace = handyContext.lastReplaceString
+	} else if (me.textToFind) { query = me.textToFind }
+	win.search.setText(query)
+	if (me.replace) win.replace.setText(me.replace)
 	this.getDesktop().showModal(win)
 	return true
 }

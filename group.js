@@ -5,6 +5,15 @@ TGroup.can.init = function() {
 	this.items = []
 	this.name = 'TGroup'
 }
+TGroup.can.pos = function(x, y) {
+	dnaof(this, x, y)
+//	this.x = x, this.y = y
+//	var dx = x - this.ux, dy = y - this.uy
+//	for (var i = 0; i < this.items.length; i++) {
+//		this.items[i].ux += dx
+//		this.items[i].uy += dy
+//	}
+}
 TGroup.can.add = function(child) {
 	child.parent = this
 	if (this.items == undefined) this.items = []

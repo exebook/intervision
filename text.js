@@ -269,6 +269,17 @@ TText.can.deleteText = function (sel) {
 	return A
 }
 
+TText.can.changeLine = function(y, f) {
+	//this.undoBegin()
+	this.undoAdd({
+		action: '=', para: y,
+		text:  this.L[y],
+		before: [y, 0], after: [y, 0],
+	})
+	this.L[y] = f(this.L[y])
+	//this.undoEnd()
+}
+
 TText.can.insertTextAt = function(txt, para, sym) {
 	this.modified = true
 	var L = this.undoList, continueTyping = false
@@ -319,7 +330,7 @@ TText.can.getText = function() {
 
 TText.can.setText = function(s) {
 	if (s == undefined) s = ''
-	this.L = s.split('\n')
+	this.L = s.replace(/\r/g, '').split('\n')
 	this.undoClear()
 }
 

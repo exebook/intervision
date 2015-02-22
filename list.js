@@ -156,7 +156,7 @@ TList.can.draw = function(state, customDraw) {
 			x += cw + 1
 			this.column_x.push(Math.floor(x - 1))
 			if (++c == this.columns - 1) cw = this.w - x
-			this.rect(Math.floor(x - 1), 0, 1, this.h, graphChar['│'], this.pal[0] | 0x8000, undefined)
+			this.rect(Math.floor(x - 1), 0, 1, this.h, graphChar['│'], this.pal[0], this.pal[1])
 			cy = 0
 		}
 		if (i < this.items.length) {

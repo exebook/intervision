@@ -5,6 +5,7 @@ var fontHints = [
 	{ name: 'LiberationMono-Regular.ttf', x: 0, y: -1 },
 	{ name: 'FreeMono.ttf', x: 0, y: -1 },
 	{ name: 'fixed7U.ttf', x: 0, y: -1 },
+	{ name: 'PTMono-Sym.ttf', x: 0, y: -1 },
 ]
 
 function renderView(win, view, atx, aty) {

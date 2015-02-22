@@ -65,7 +65,7 @@ TInput.can.init = function(text) {
 TDoneBar = kindof(TView)
 TDoneBar.can.init = function() {
 	dnaof(this)
-	this.pos = 0, this.max = 100
+	this.position = 0, this.max = 100
 	//'█▒▓░▍▌'
 }
 
@@ -73,7 +73,7 @@ TDoneBar.can.draw = function(state) {
 	dnaof(this, state)
 	var X = (this.max / this.w)
 	if (X == 0) return
-	X = Math.round(this.pos / X)
+	X = Math.round(this.position / X)
 	this.rect(X, 0, this.w, 1, '░', 0xaaa, 0x888, 0x0)
 	this.rect(0, 0, X, 1, ' ', this.pal[1], this.pal[0]) //█
 }
@@ -90,7 +90,7 @@ TScrollBar.can.draw = function(state) {
 	if (this.track) {
 		var track = this.track()
 		var max = track.size + 1 // track.page -- depends on pagedown/end behaviour
-		var Y = Math.floor(this.h * (track.pos / max))
+		var Y = Math.floor(this.h * (track.position / max))
 		this.print(0, Y, '::', this.pal[0], this.pal[1] | 0x3000)
 	}
 }
