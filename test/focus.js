@@ -1,16 +1,27 @@
-require('dnaof')
+require('dotcall')
+require('./dnaof')
 glxwin = require('../../glxwin/glxwin.js')
 require('../intervision')
 log= console.log
 var count = 0
 
+TWin = kindof(TWindow)
+TWin.can.onKey = function (K) {
+	if (dnaof(this, K)) return true;
+	if (K.down) {
+		log (this.title, K.key);
+		return true
+	}
+	return dnaof(this, K)
+}
+
 addSplit = function(view, vert, depth) {
-	view.L = TWindow.create()
+	view.L = TWin.create()
 	view.add(view.L)
 	view.L.title = count+(vert?'.T':'.L')
 	view.L.name = view.L.title
 
-	view.R = TWindow.create()
+	view.R = TWin.create()
 	view.add(view.R)
 	view.R.title = count+(vert?'.B':'.R')
 	view.R.name = view.R.title
@@ -19,9 +30,6 @@ addSplit = function(view, vert, depth) {
 	count++
 
 	view.actor = view.L
-	var fk = function(key, down, physical) { if (dnaof(this, key, down, physical)) return true; if (down) { log (this.title, key, down, physical); return true } }
-	view.L.onKey = fk
-	view.R.onKey = fk
 	if (depth == 3) return
 	addSplit(view.L, !vert, depth + 1)
 	addSplit(view.R, !vert, depth + 1)
@@ -52,8 +60,9 @@ fixSize = function(view, x, y, w, h, depth) {
 }
 
 var TDeodar = kindof(TGLXVision)
+
 TDeodar.can.init = function() {
-	dnaof(this, TDesktop, 80, 20)
+	dnaof(this, './fixed7.ttf', 23, TDesktop, 37*2,40)
 	addSplit(this.desktop, false, 0)
 }
 TDeodar.can.onSize = function(w, h) {
