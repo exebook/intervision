@@ -59,7 +59,7 @@ TGLXVision.can.caretDraw= ➮{
 	⌥ (SCREEN.caret ≠ ∅ && ⚫caretDisabled ≠ ⦿) {
 		⚫paintBegin()
 		∇ x = SCREEN.caret.x, y = SCREEN.caret.y
-		∇ ch = 32, clr ⊜xfff
+		∇ ch = 32, clr = 0xfff
 		∇ o = ⚫desktop.get(x, y)
 		⌥ (o ≠ ∅) {
 			⌥ (o.ch ≠ ∅) ch = o.ch
@@ -71,7 +71,7 @@ TGLXVision.can.caretDraw= ➮{
 		x = ⚫fnt⁰ * x, y = ⚫fnt¹ * y
 		⚫colorText(x, y, 1, 1, TEXT, COLOR)
 		⌥ (⚫caretFlash ≟ ⦿) {
-			∇ C ⊜xff008800, c
+			∇ C = 0xff008800, c
 			⌥ (SCREEN.caret.color) {
 				c = SCREEN.caret.color
 				C = (c & 0xff) << 4 | c & 0xf | (c & 0xff0) << 8 
@@ -104,9 +104,8 @@ TGLXVision.can.onSize = ➮(w, h) {
 	⌛(⚫repaint.bind(⚪), 30)
 	SCREEN.T = ⟡ Uint16Array(W*H)
 	SCREEN.C = ⟡ Uint32Array(W*H)
-i ⬌ SCREEN.T { SCREEN.Tⁱ = '#'◬(0) }
-i ⬌ SCREEN.C { SCREEN.Cⁱ = 0x0fff0000 }
-ロ 'RESIZE'
+i ⬌ SCREEN.T { SCREEN.Tⁱ = 32 }
+i ⬌ SCREEN.C { SCREEN.Cⁱ = 0x777 }
 }
 
 TGLXVision.can.onPaint = ➮{

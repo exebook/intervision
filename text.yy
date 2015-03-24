@@ -55,7 +55,8 @@ deleteString = ➮(str, from, to) {
 //	if ((' \t').indexOf(ch) >= 0) type = 1
 	⌥ ((' \t`~!@#$%^&*()-+={[}]|\"\':;?/>.<,')≀(ch) >= 0) type = 2
 	⌥ (('0123456789')≀(ch) >= 0) type = 3
-	⌥ (ch.charCodeAt(0) > 0x1200) $ 4
+	⌥ (ch ≟ ∅) $
+	⌥ (ch◬(0) > 0x1200) $ 4
 	$ type
 }
 

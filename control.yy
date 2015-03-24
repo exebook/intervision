@@ -65,7 +65,7 @@ TInput.can.init = ➮(text) {
 TDoneBar = kindof(TView)
 TDoneBar.can.init = ➮{
 	dnaof(⚪)
-	⚫position ⊜, ⚫max = 100
+	⚫position = 0, ⚫max = 100
 	//'█▒▓░▍▌'
 }
 

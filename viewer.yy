@@ -94,7 +94,12 @@ TModalTextView.can.commandRunNew = ➮{
 			'Обратите внимание, что вы ничего не ввели и комманда теперь пустая')
 	})
 	∇ s = ⚫runCommand
-	⌥ (s ≟ '') s = 'node ' + ⚫fileName⌶('/').pop()
+	⌥ (s ≟ '') {
+		app ∆ './'
+		⌥ (⚫fileName≀('.yy') >= 0) app = 'yy '
+		⌥ (⚫fileName≀('.js') >= 0) app = 'node '
+		s = app + ⚫fileName⌶('/').pop()
+	}
 	w.input.setText(s)
 	⚫getDesktop().showModal(w)
 	$ ⦿

@@ -65,32 +65,40 @@ TView.can.get = ➮ (x, y) {
 	$ ⚫dataʸˣ
 }
 
-//	if (this.data[y] == undefined) this.data[y] = []
-//	var o = this.data[y][x]
-//	if (o == undefined) o = { }
-//	if (ch != undefined) o.ch = ch
-//	if (fg != undefined) o.fg = fg
-//	if (bg != undefined) o.bg = bg
-//	this.data[y][x] = o
-
-sets = {}
-TView.can.set = ➮ (x, y, ch, fg, bg) {
-	∇ O = SCREEN.W * y + x + SCREEN.O
-
+➮ fgbgn ch fg bg {
 	∇ ch, clr
-	⌥ (ch) {
-		ch = ch◬(0)
-		clr = fg & 0xffff
-		clr = clr | (bg & 0xffff) << 16
-	} ⎇ {
-		⌥ (fg ≠ ∅) clr = fg & 0xffff
-		⌥ (bg ≠ ∅) clr = clr | (bg & 0xffff) << 16
-		$
-	}
-
-	SCREEN.T[O] = ch
-	SCREEN.C[O] = clr
+	ch = ch◬(0)
+	clr = fg & 0xffff
+	clr = clr | (bg & 0xffff) << 16
+	$ [ch, clr]
 }
+
+TView.can.set = ➮ (x, y, ch, fg, bg) {
+	⌥ (ch ≟ ∅) $
+	∇ O = SCREEN.W * y + x + SCREEN.O
+	C ∆ fgbgn(ch, fg, bg)
+	SCREEN.T[O] = C⁰
+	SCREEN.C[O] = C¹
+}
+TView.can.setn = ➮ (x, y, ch, n) {
+	∇ O = SCREEN.W * y + x + SCREEN.O
+	SCREEN.T[O] = ch
+	SCREEN.C[O] = n
+}
+TView.can.rect = ➮(X, Y, w, h, ch, fg, bg) {
+	⌥ (ch ≟ ∅) $
+	∇ n = fgbgn(ch, fg, bg) ⦙ ch = n⁰, n = n¹
+	sw ∆ SCREEN.W
+	p0 ∆ sw * Y + X + SCREEN.O, p
+	∇ T = SCREEN.T, C = SCREEN.C
+	⧗ (∇ y = 0 ⦙ y < h ⦙ y++) {
+		p = p0
+		⧗ (∇ x = 0 ⦙ x < w ⦙ x++)
+			Tᵖ = ch, Cᵖ = n, p++
+		p0 += sw
+	}
+}
+
 
 TView.can.render = ➮{
 	$
@@ -113,14 +121,6 @@ TView.can.print = ➮ (x, y, s, fg, bg) {
 	⌥ (x + e > ⚫w) e = ⚫w - x
 	⧗ (∇ i ⊜ ⦙ i < e ⦙ i++) {
 		⚫set(x + i, y, s△(i), fg, bg)
-	}
-}
-
-TView.can.rect = ➮(X, Y, w, h, ch, fg, bg) {
-	⧗ (∇ y = Y ⦙ y < Y+h ⦙ y++) {
-		⧗ (∇ x = X ⦙ x < X+w ⦙ x++) {
-			⚫set(x, y, ch, fg, bg)
-		}
 	}
 }
 

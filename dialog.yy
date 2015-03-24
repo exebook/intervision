@@ -7,7 +7,7 @@ TDialog.can.init = ➮(W, H) {
 	⚫name = 'TDialog'
 	⚫title = 'Без названия'
 	⚫size(W, H)
-	⚫addX = 5, ⚫addY = 2, ⚫addLineH ⊜
+	⚫addX = 5, ⚫addY = 2, ⚫addLineH = 0
 	⚫addRow = ➮{ ⚫addX = 5, ⚫addY += ⚫addLineH }
 	⚫pal = getColor.dialog
 }
