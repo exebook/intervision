@@ -34,28 +34,12 @@ TView.can.size = ➮(w, h) {
 }
 
 TView.can.pos = ➮(x, y) {
-//	if (this.parent && this.parent.x) {
-//	this.ux = x + this.parent.x
-//	this.uy = y + this.parent.y
-//	}
-//	else {
-// 	this.ux = x, this.uy = y
-//		console.log('PARENTLES POS', this.name, x,y)
-//		console.log(new Error().stack)
-//	//	process.exit()
-//	}
-//	this.x = x, this.y = y
-//
-//	return
 	⚫x = x, ⚫y = y
 }
 
 //var DATA = []
 
 TView.can.get = ➮ (x, y) {
-//	if (DATA[y] == undefined) return undefined
-//	return DATA[y][x]
-//
 	∇ O = SCREEN.W * y + x + SCREEN.O
 	
 	∇ ch = SCREEN.T[O]
@@ -91,9 +75,9 @@ TView.can.rect = ➮(X, Y, w, h, ch, fg, bg) {
 	sw ∆ SCREEN.W
 	p0 ∆ sw * Y + X + SCREEN.O, p
 	∇ T = SCREEN.T, C = SCREEN.C
-	⧗ (∇ y = 0 ⦙ y < h ⦙ y++) {
+	⧗ (y ∆ 0 ⦙ y < h ⦙ y++) {
 		p = p0
-		⧗ (∇ x = 0 ⦙ x < w ⦙ x++)
+		⧗ (x ∆ 0 ⦙ x < w ⦙ x++)
 			Tᵖ = ch, Cᵖ = n, p++
 		p0 += sw
 	}
@@ -119,7 +103,7 @@ TView.can.render = ➮{
 TView.can.print = ➮ (x, y, s, fg, bg) {
 	∇ e = s ↥
 	⌥ (x + e > ⚫w) e = ⚫w - x
-	⧗ (∇ i ⊜ ⦙ i < e ⦙ i++) {
+	⧗ (i ∆ 0 ⦙ i < e ⦙ i++) {
 		⚫set(x + i, y, s△(i), fg, bg)
 	}
 }

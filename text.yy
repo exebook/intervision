@@ -247,6 +247,7 @@ TText.can.deleteText = ➮ (sel) {
 	⌥ (A⁰ ≟ B⁰ && L ↥ > 0) {
 		∇ U = L[L ↥ - 1]
 		⌥ (U.action ≟ '=' && U.para ≟ A⁰) continueTyping = ⦿
+		⌥ (⚫flushed) continueTyping = ⚫flushed = ⦾
 	 }
 	⌥ (!continueTyping) ⚫undoNext()
 
@@ -286,11 +287,12 @@ TText.can.insertTextAt = ➮(txt, para, sym) {
 	⚫modified = ⦿
 	∇ L = ⚫undoList, continueTyping = ⦾
 	⌥ (txt ↥ ≟ 1 && L ↥ > 0) {
-		∇ U = L[L ↥ - 1]
+		∇ U = Lꕉ
 		⌥ (U.action ≟ '=' && U.para ≟ para) continueTyping = ⦿
+		⌥ (⚫flushed) continueTyping = ⦾, ⚫flushed = ⦾
 	 }
 	⌥ (!continueTyping) ⚫undoNext()
-	∇ s = ⚫L[para], a = s⩪(0, sym), b = s⩪(sym, s ↥ - sym)
+	∇ s = ⚫L[para], a = s⩪(0, sym), b = s⩪(sym, s↥ - sym)
 	∇ T = txt⌶('\n')
 	⌥ (!continueTyping) ⚫undoAdd({
 		action: '=', para: para, 
@@ -302,13 +304,13 @@ TText.can.insertTextAt = ➮(txt, para, sym) {
 		⚫L[para] = a + T + b
 		$ { para: para, sym: sym + txt ↥}
 	}
-	∇ P = { para: para + T ↥ - 1, sym: T[T ↥ - 1] ↥}
+	∇ P = { para: para + T↥ - 1, sym: Tꕉ↥}
 	⚫undoAdd({
 		action: '-', para: para + 1, count: T ↥ - 1,
 		before: [para, sym], after: [P.para, P.sym],
 	})
 	T⁰ = a + T⁰
-	T[T ↥ - 1] += b
+	Tꕉ += b
 	⚫L⨄.apply(⚫L, [para, 1]ꗚ(T))
 	$ P
 }
@@ -337,7 +339,7 @@ TText.can.setText = ➮(s) {
 }
 
 TText.can.undoClear = ➮{
-	⚫undoID ⊜
+	⚫undoID = 0
 	⚫undoList = []
 	⚫redoList = []
 }
@@ -354,6 +356,12 @@ TText.can.undoBegin = ➮{
 
 TText.can.undoEnd = ➮{
 	⚫undoBatch = ⦾
+}
+
+TText.can.undoFlush = ➮ {
+//ロ ⚫undoID, ⚫undoList, ⚫redoList
+//	⚫undoID++
+	⚫flushed = ⦿
 }
 
 TText.can.undoAdd = ➮(U) {
@@ -374,7 +382,7 @@ TText.can.redo = ➮{
 
 TText.can.undoAction = ➮(L, R) {
 	∇ ret
-	➮ swap { ∇ t = A.before ⦙ A.before = A.after ⦙ A.after = t}
+	➮ swap { t ∆ A.before ⦙ A.before = A.after ⦙ A.after = t }
 	⌥ (R ↥ ≟ 0) $
 	∇ id = R[R ↥ - 1].id
 	⧖ (R ↥ > 0 && R[R ↥ - 1].id ≟ id) {

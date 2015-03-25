@@ -192,6 +192,42 @@ messageBox = ➮(desktop, message, callback) {
 	desktop.showModal(me)
 }
 
+TKeyChoose = kindof(TWindow)
+TKeyChoose.can.onKey = ➮ (K) {
+	⌥ (K.key ≟ keycode.ESCAPE) { ⚫close() } //process.exit()⦙$}
+	⌥ (dnaof(⚪, K)) $ ⦿ ⦙
+	⌥ (K.physical) {
+		⌥ (K.down) {
+			⚫KEY = K
+			$ ⦿
+		} ⥹ (⚫KEY && ⚫KEY.char) {
+			⚫close()
+			⚫onSelected()
+			ロ 'Selection:', K.key, ⚫KEY.char
+		}
+	}
+	$ dnaof(⚪, K)
+}
+TKeyChoose.can.draw = ➮{
+	dnaof(⚪, a)
+	⚫print(2, 1, 'Выбор буквы:', ⚫pal⁰, ⚫pal¹)
+	K ∆ ⚫KEY
+	⌥ (K) {
+		⚫print(4, 2, ''+K.key, 0xfff, ⚫pal¹)
+	}
+}
+
+makeKeyChoose = ➮ (desktop, f) {
+	w ∆ TKeyChoose.create()
+	w.title = 'Нажми!'
+	w.pos(1,1)
+	w.size(20, 5)
+	w.x = (desktop.w >> 1) - (w.w >> 1)
+	w.onSelected = f
+	desktop.showModal(w)
+//	desktop.add(w)
+//	desktop.actor = w
+}
 
 // auto keyword list by appearance in this file + config with weights
 

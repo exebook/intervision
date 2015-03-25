@@ -231,11 +231,12 @@ TEdit.can.updateTargetX = ➮{
 }
 
 TEdit.can.moveCursor = ➮(arg) { ☛ (⚪) {
+	text.undoFlush()
 	∇ me = ⚪
 	➮ newX { ☛ (me) {
 		∇ A = text.textToScroll(para, sym)
 		A = text.scrollToText(A⁰, targetX)
-		⌥  (A) para = A⁰, sym = A¹
+		⌥ (A) para = A⁰, sym = A¹
 	}}
 	⌥ (arg ≟ 'left') {
 		sym--

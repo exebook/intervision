@@ -148,6 +148,7 @@ TDesktop.can.onMouse = ➮(hand) {
 	$ dnaof(⚪, hand)
 }
 TDesktop.can.showModal = ➮(d, x, y, w, h) {
+	⌥ (w) ロ 'group:151: weird, w specified'
 	⌥ (x ≟ ∅) x = (⚫w >> 1) - (d.w >> 1)
 	⌥ (y ≟ ∅) y = (⚫h >> 1) - (d.h >> 1)
 	d.pos(x, y)
@@ -158,8 +159,10 @@ TDesktop.can.showModal = ➮(d, x, y, w, h) {
 	d.repaint()
 }
 TDesktop.can.hideModal = ➮{
-	⌥ (⚫modal.onHide) ⚫modal.onHide()
-	⚫remove(⚫modal)
+	⌥ (⚫modal) { 
+		⌥ (⚫modal.onHide) ⚫modal.onHide()
+		⚫remove(⚫modal)
+	}
 	⚫modal = ⚫modals.pop()
 	⚫actor = ⚫actors.pop()
 	⚫clear()
