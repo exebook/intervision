@@ -1,4 +1,9 @@
-themeList = ['Green', 'Cyan', 'White', 'Black', 'Green2', 'Pink1', 'Purple', 'Yellow', 'Blue1', 'Atari1']
+themeList = [
+//'Green', 'Cyan', 
+'White', 'Black',
+//'Green2', 'Pink1', 'Purple', 'Yellow', 'Blue1', 
+'Atari1', 'Kofe', 'Milk', 'Gray'
+]
 
 readColorConfig = ➮{
 	∇ cfg = expandPath('~/.deodar/conf.js'), R = 'syntaxWhite'
@@ -224,7 +229,9 @@ TFileEdit = kindof(TEdit)
 TFileEdit.can.init = ➮(fileName) {
 	dnaof(⚪)
 	⚫fileName = fileName
-	⚫text.setText(fs.readFileSync(fileName)≂)
+	❶ ''
+	⌥ (fs.existsSync(fileName)) ① = fs.readFileSync(fileName)≂
+		⚫text.setText(①)
 	⌥ (⚫fileName≀('.asm') > 0
 		|| ⚫fileName≀('.inc') > 0) ⚫text.lexer = ASMLexer
 	⌥ (⚫fileName≀('.sh') > 0) ⚫text.lexer = ShellLexer
@@ -254,7 +261,9 @@ TFileEdit.can.openGuide = ➮ {
 		me.close()
 //		ロ 'Signal2', a
 		∇ viewer = viewFile(me.getDesktop(), a, TFileEdit)
-		viewer.norton = me.parent.norton
+		⌥ (viewer) {
+			viewer.norton = me.parent.norton
+		}
 //		me.viewFileName(TFileEdit, a)
 	})
 	$⦿
@@ -271,7 +280,8 @@ TFileEdit.can.save = ➮{
 	try {
 		fs.writeFileSync(⚫fileName, ⚫text.getText())
 	} catch (e) {
-		messageBox(⚫getDesktop(), 'Файл "' + ⚫fileName⌶('/').pop() + '" не удалось сохранить, ' + e)
+		messageBox(⚫getDesktop(), 'Файл "' + ⚫fileName⌶('/').pop()
+		+ '" не удалось сохранить, ' + e)
 		$ ⦿
 	}
 	⚫text.modified = ⦾
@@ -318,7 +328,8 @@ viewFile = ➮(Desktop, fileName, viewClass, colors) {
 	try {
 		∇ size = fs.statSync(fileName).size
 	} catch (e) {
-		messageBox(Desktop, 'Файл "' + fileName⌶('/').pop() + '" не удалось открыть')
+		messageBox(Desktop, 'Файл "' + fileName⌶('/').pop()
+		+ '" не удалось открыть')
 		$
 	}
 	room.say('edit begin file', fileName)

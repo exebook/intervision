@@ -192,9 +192,10 @@ messageBox = ➮(desktop, message, callback) {
 	desktop.showModal(me)
 }
 
-TKeyChoose = kindof(TWindow)
+TKeyChoose = kindof(TDialog)
 TKeyChoose.can.onKey = ➮ (K) {
 	⌥ (K.key ≟ keycode.ESCAPE) { ⚫close() } //process.exit()⦙$}
+	⌥ (K.key ≟ keycode.DELETE) { ⚫close() ⦙ ⚫onSelected(∅) }
 	⌥ (dnaof(⚪, K)) $ ⦿ ⦙
 	⌥ (K.physical) {
 		⌥ (K.down) {
@@ -202,7 +203,7 @@ TKeyChoose.can.onKey = ➮ (K) {
 			$ ⦿
 		} ⥹ (⚫KEY && ⚫KEY.char) {
 			⚫close()
-			⚫onSelected()
+			⚫onSelected(⚫KEY)
 			ロ 'Selection:', K.key, ⚫KEY.char
 		}
 	}
@@ -210,18 +211,20 @@ TKeyChoose.can.onKey = ➮ (K) {
 }
 TKeyChoose.can.draw = ➮{
 	dnaof(⚪, a)
-	⚫print(2, 1, 'Выбор буквы:', ⚫pal⁰, ⚫pal¹)
+	❶ 'Выбор буквы:'
+	⚫print(5, 3, ①, ⚫pal⁰, ⚫pal¹)
 	K ∆ ⚫KEY
 	⌥ (K) {
-		⚫print(4, 2, ''+K.key, 0xfff, ⚫pal¹)
+		⚫print(5 + ①↥ +2, 3, ' '+K.char+' ', ⚫pal¹, ⚫pal⁰)
 	}
 }
 
 makeKeyChoose = ➮ (desktop, f) {
 	w ∆ TKeyChoose.create()
 	w.title = 'Нажми!'
+	w.bottomTitle = 'Esc:отмена,Del:сброс'
 	w.pos(1,1)
-	w.size(20, 5)
+	w.size(32, 7)
 	w.x = (desktop.w >> 1) - (w.w >> 1)
 	w.onSelected = f
 	desktop.showModal(w)

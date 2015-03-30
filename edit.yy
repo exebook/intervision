@@ -162,8 +162,8 @@ TEdit.can.draw = ➮(state) {
 			∇ X = line.wˣ
 			∇ char = line.sˣ, P = line.cˣ
 			⌥ (P ≟ -1) {
-				B ⊜xff, F ⊜x800
-				⌥ (⚫match) B ⊜x88f, F ⊜x0cc
+				B =0x0ff, F =0x00f
+				⌥ (⚫match) B=0x88f, F=0x0cc//Control-M
 			} ⎇ F = ⚫pal[P + 5]
 			∇ selc = ⦾
 			⌥ 	(selState ≟ 5 || 
@@ -220,7 +220,7 @@ TEdit.can.draw = ➮(state) {
 		Y++
 	}
 	⌥ (l < ⚫h) {
-		⚫rect(0, l, ⚫w, ⚫h-1, '░', ⚫pal⁰ | 0xa000, ⚫pal¹)
+		⚫rect(0, l, ⚫w, ⚫h-l, '░', ⚫pal⁰ | 0xa000, ⚫pal¹)
 			// | 0x1000)
 	}
 }
