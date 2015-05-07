@@ -240,8 +240,8 @@ repaint = ➮{
 	try { i.dont.exist += 0 } catch (e) {
 		∇ S = e.stack⌶('\n')
 		//process.stdout.write(e.stack + '\n')
-		log(S²)
-		log(S³)
+		log('S²:', S²)
+		log('S³', S³)
 	}
 }
 

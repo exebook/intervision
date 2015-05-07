@@ -75,7 +75,7 @@ TView.can.rect = ➮(X, Y, w, h, ch, fg, bg) {
 	sw ∆ SCREEN.W
 	p0 ∆ sw * Y + X + SCREEN.O, p
 	∇ T = SCREEN.T, C = SCREEN.C
-⌥ (T ≟ ∅) ロ SCREEN
+//⌥ (T ≟ ∅) ロ SCREEN
 	⧗ (y ∆ 0 ⦙ y < h ⦙ y++) {
 		p = p0
 		⧗ (x ∆ 0 ⦙ x < w ⦙ x++)

@@ -103,7 +103,6 @@ getColor = {
                //cursor spc   ==   title  sel  rem   sym   num   str   id    ➮
 // ロ  cons  TView this  (atari spc=762)
 //syntaxAtari1: [0xff0,0x960,0xff0,0xf52,0x931,0xcb7,0xfb4,0x5e7,0x99f,0xff8,0xffe,0x0ff,0x0ff,0xcfb,0xfbf], //good:0xfc8
-ロ 'NEW VERSUN'
 /*
 a ∆ getColor.syntaxAtari1
 //a ∆ getColor.syntaxBlack

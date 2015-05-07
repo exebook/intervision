@@ -797,7 +797,7 @@ TEdit.can.convertSpacesToTab = ➮{
 		i ⬌ s ⌥ (sⁱ ≟ ' ') spaces++ ⦙ ⎇ @
 		s = s⩪(spaces, s ↥)
 		⧗ (∇ i ⊜ ⦙ i < steps[spaces] ⦙ i++) s = '\t'+s
-		ロs
+		ロ 'spaces to tabs:', s
 		$ s
 	})
 	⚫text.undoEnd()

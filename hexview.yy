@@ -92,9 +92,9 @@ THexView.can.draw = ➮{
 			n = n.toUpperCase()
 			⧖ (n ↥ < (⚫bytes << 1)) n = '0' + n
 		}
-		⚫print(x, y, n, F)
+		⚫print(x, y, n, F, ⚫pal¹)
 		⌥ (⚫rows ≟ 2) {
-			⚫print(x, y + 1, ch, C2)
+			⚫print(x, y + 1, ch, C2, ⚫pal¹)
 		}
 		x += w ⦙ ⌥ ((x + w) >= ⚫w) x ⊜, y += ⚫rows
 	}
