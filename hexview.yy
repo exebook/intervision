@@ -6,7 +6,7 @@ THexView.can.init = ➮(fileName) {
 	⚫symWidth = 3
 	⚫base = 16
 	⚫bytes = 1
-	⚫setMode('double')
+	⚫setMode('overlay')
 	⚫lines = []
 	⚫name = 'THexView'
 	⚫delta ⊜
@@ -78,24 +78,44 @@ THexView.can.draw = ➮{
 	dnaof(⚪)
 //	log(this.bytes)
 	∇ x ⊜, y ⊜, w = ⚫symWidth
-	∇ ch, num, F, C1 = ⚫pal⁰, C2 = ⚫pal²
-	⧗ (∇ i ⊜ ⦙ i < ⚫bytesRead ⦙ i++) {
-		num = ∅, ch = ∅, F = C1
+	∇ ch, num, F
+	⧗ (∇ i ⊜ ⦙ i < ⚫bytesRead || y > ⚫h ⦙ i++) {
+		num ∆ ∅ ch ∆ ∅ F ∆ ⚫pal⁷
 		∇ n = ⚫bufⁱ
 		⌥ (⚫mode ≟ 'text' || ⚫mode ≟ 'double' || 
 			(⚫mode ≟ 'overlay' && charList≀(String.fromCharCode(n)) >= 0))
 				ch = String.fromCharCode(n)
-		n = n.toString(⚫base)
-		⌥ (⚫mode ≟ 'overlay' && ch) n = ch, F = C2
-		⥹ (⚫mode ≟ 'text') n = ch
-		⎇ {
-			n = n.toUpperCase()
-			⧖ (n ↥ < (⚫bytes << 1)) n = '0' + n
+		icon ∆ ⦾
+		⌥ (⚫mode ≟ 'overlay' && ch ≟ ∅) {
+			icon = ⦿
+			⌥ (n ≟ 0) n = '⁰'
+			⥹ (n ≟ 1) n = '¹'
+			⥹ (n ≟ 2) n = '²'
+			⥹ (n ≟ 3) n = '³'
+			⥹ (n ≟ 4) n = '⁴'
+			⥹ (n ≟ 5) n = '⁵'
+			⥹ (n ≟ 6) n = '⁶'
+			⥹ (n ≟ 7) n = '⁷'
+			⥹ (n ≟ 8) n = '⁸'
+			⥹ (n ≟ 9) n = '⇥'
+			⥹ (n ≟ 10) n = '↵'//'⏎'//'░'
+			⥹ (n ≟ 11) n = '¹¹'
+			⥹ (n ≟ 13) n = '⏎'//←
+			⎇ icon = ⦾
+			⌥ (icon) F = ⚫pal⁵ //5-comment 7-number 0-id 
 		}
+		⌥ (!icon) {
+			n = n≂ (⚫base)
+			⌥ (⚫mode ≟ 'overlay' && ch) n = ch, F = ⚫pal⁸
+			⥹ (⚫mode ≟ 'text') n = ch
+			⎇ {
+				n = n.toUpperCase()
+				⧖ (n ↥ < (⚫bytes << 1)) n = '0' + n
+			}
+		}
+//		ロ ⚫pal
 		⚫print(x, y, n, F, ⚫pal¹)
-		⌥ (⚫rows ≟ 2) {
-			⚫print(x, y + 1, ch, C2, ⚫pal¹)
-		}
+		⌥ (⚫rows ≟ 2) ⚫print(x, y + 1, ch, ⚫pal⁵, ⚫pal¹)
 		x += w ⦙ ⌥ ((x + w) >= ⚫w) x ⊜, y += ⚫rows
 	}
 }

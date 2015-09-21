@@ -6,11 +6,11 @@ TSelection.can.init = ➮{
 	⚫_data = data// for debug
 	➮ sort { ☛ (data) {
 		⌥ ((a.y > b.y) || (a.y ≟ b.y && a.x > b.x))
-			s = { a: { x: data.b.x, y: data.b.y }, b: { x: data.a.x, y: data.a.y } }
-		⎇ s = { b: { x: data.b.x, y: data.b.y }, a: { x: data.a.x, y: data.a.y } }
+			s = { a: { x: b.x, y: b.y }, b: { x: a.x, y: a.y } }
+		⎇ s = { b: { x: b.x, y: b.y }, a: { x: a.x, y: a.y } }
 		$ s
 	}}
-	⚫get = ➮{
+	⚫get = ➮ {
 		⌥ (⚫clean()) $ ∅
 		⌥ (⚫ender) {
 			∇ ext = ⚫ender(sort())
@@ -52,7 +52,7 @@ deleteString = ➮(str, from, to) {
 
 ➮ charType ch {
 	∇ type ⊜
-//	if ((' \t').indexOf(ch) >= 0) type = 1
+//   if ((' \t').indexOf(ch) >= 0) type = 1
 	⌥ ((' \t`~!@#$%^&*()-+={[}]|\"\':;?/>.<,')≀(ch) >= 0) type = 2
 	⌥ (('0123456789')≀(ch) >= 0) type = 3
 	⌥ (ch ≟ ∅) $
@@ -93,6 +93,7 @@ wordRight = ➮(s, X) {
 	}
 	$ x
 }
+
 ∇ idCharHash = {}
 ∇ idChars = '_qazwsxedcrfvtgbyhnujmikolpQAZWSXEDCRFVTG'
 	+'BYHNUJMIKOLP1234567890йцукен'
@@ -106,95 +107,103 @@ i ⬌ idChars idCharHash[idCharsⁱ] = ⦿
 }
 
 ➮ breakPara s W tab { // str: '12345+abcdef+hello', width: 10, result: [ 6, 7, 5 ]
-	∇ L = [], w ⊜, n ⊜
+	L ∆ [], w ⊜, n ⊜
 	i ⬌ s {
 		⌥ (w >= W) {
-			∇ maxback = W / 2
+			maxback ∆ W / 2
 			⧖ (maxback-- > 0 && idChar(s[i - 1]) && idChar(sⁱ)) i--, n--
-			L ⬊(n), w ⊜, n ⊜
+			L ⬊n, w ⊜, n ⊜
 		}
 		⌥ (sⁱ ≟ '\t') w += tab ⦙ ⎇ w++
 		n++
 	}
-	L ⬊(w)
+	L ⬊w
 	$ L
-}
-
-➮ zz N t {
-	∇ x ⊜
-	∇ L = breakPara(t, N, 3)
-	i ⬌ L {
-		∇ s = t⩪(x, Lⁱ)
-		⧖ (s ↥ < N) s += ' '//'░'
-		x += Lⁱ
-		log('|'+s.replace(/\t/g, '░')+'|')
-	}
-}
-
-getParts = ➮(s, C, L) {
-	∇ R ={ s: [], c: [], w:[] }, x ⊜
-	i ⬌ L {
-		∇ t = s⩪(x, Lⁱ)
-		x += Lⁱ
-		R.s ⬊(t)
-		R.c ⬊(C⨄(0, Lⁱ))
-	}
-	$ R
-}
-
-getWidths = ➮(s, tab) {
-	∇ W = [], q ⊜
-	r ⬌ s {
-		∇ w = 1
-		⌥ (sʳ ≟ '\t') w = tab
-		W ⬊(q)
-		q += w
-	}
-	W ⬊(q) // end line marker
-	$ W
 }
 
 TText = kindof(TObject)
 TText.can.init = ➮{
 	dnaof(⚪)
-	⚫L = ['']//'\tabc', '123']
+	⚫L0 = ['']//'\tabc', '123']
 	⚫w ⊜, ⚫h ⊜
 	⚫tab = 3
 	⚫undoClear()
 	⚫modified = ⦾
 	⚫colored = ⦿
 	⚫lexer = JSLexer
+	⚫cache = []
 }
 
+TText.can.paraCount = ➮ {
+	$ ⚫L0↥
+}
+TText.can.lengthOfPara = ➮ {
+	$ ⚫L0ᵃ↥
+}
+TText.can.getLineLength = ➮ {
+	$ ⚫getLines(a, 1)⁰↥
+}
 TText.can.size =➮(w, h) {
 	⚫w = w, ⚫h = h
+	cache = []
 }
 
 TText.can.getHeight = ➮{
 	∇ h ⊜
-	i ⬌ this.L {
-		∇ P = breakPara(⚫Lⁱ, ⚫w, ⚫tab)
+	i ⬌ ⚫L0 {
+		∇ P = breakPara(⚫L0ⁱ, ⚫w, ⚫tab)
 		h += P ↥
 	}
 	$ h
 }
 
 TText.can.getLines = ➮(y, count) {
-	∇ h ⊜, R = []
-	i ⬌ this.L {
-		∇ s = ⚫Lⁱ
-		∇ B = breakPara(s, ⚫w, ⚫tab)
-		⌥ (h + B ↥ > y) {
-			∇ C = []
-			⌥ (⚫colored ≟ ⦿) C = ⚫lexer.colorizeString(s)
-			∇ P = getParts(s, C, B)
+	getParts = ➮(s, C, L) {
+		∇ R ={ s: [], c: [], w:[] }, x ⊜
+		i ⬌ L {
+			∇ t = s⩪(x, Lⁱ)
+			x += Lⁱ
+			R.s ⬊ t
+			R.c ⬊(C⨄(0, Lⁱ))
 		}
-		∇ x ⊜
+		$ R
+	}
+	
+	getWidths = ➮(s, tab) {
+		∇ W = [], q ⊜
+		r ⬌ s {
+			∇ w = 1
+			⌥ (sʳ ≟ '\t') w = tab
+			W ⬊(q)
+			q += w
+		}
+		W ⬊(q) // end line marker
+		$ W
+	}
+	
+	h ∆ 0 R ∆ []
+	i ⬌ ⚫L0 {
+		s ∆ ⚫L0ⁱ
+//		⌥ (⚫cacheⁱ) {
+//			ZZ++
+//			B ∆ ⚫cacheⁱ⁰ P ∆ ⚫cacheⁱ¹ C ∆ ⚫cacheⁱ²
+//		} ⎇ 
+		{
+			B ∆ breakPara(s, ⚫w, ⚫tab)
+			⌥ (h + B↥ > y) {
+				C ∆ []
+				⌥ (⚫colored ≟ ⦿) C = ⚫lexer.colorizeString(s)
+				P ∆ getParts(s, C, B)
+				//⚫cacheⁱ = [B, P, C]
+			}
+		}
+		x ∆ 0
 		b ⬌ B {
 			⌥ (h >= y) {
-				∇ W = getWidths(P.sᵇ, ⚫tab)
-				R ⬊({ para:i, part: b, s: P.sᵇ, c: P.cᵇ, w: W, p: P, 
-					l: ⚫Lⁱ , length: Bᵇ, last: b ≟ B ↥ - 1, startSym: x })
+				W ∆ getWidths(P.sᵇ, ⚫tab)
+				D ∆ { para:i, first: b ≟ 0, s: P.sᵇ, c: P.cᵇ, w: W, p: P, 
+					l: ⚫L0ⁱ , length: Bᵇ, last: b ≟ B ↥ - 1, startSym: x }
+				R ⬊ D
 				⌥ (R ↥ ≟ count) $ R
 			}
 			⌥ (C) x += P.sᵇ ↥
@@ -217,7 +226,7 @@ TText.can.scrollToText = ➮(lineNum, position) { // line:column -> para:pos
 }
 
 TText.can.textToScroll = ➮(para, pos) {
-	∇ galley = ⚫L, y ⊜
+	∇ galley = ⚫L0, y ⊜
 	⌥ (para >= galley ↥) $
 	⧗ (∇ l ⊜ ⦙ l < para ⦙ l++) {
 		∇ P = breakPara(galleyˡ, ⚫w, ⚫tab)
@@ -235,40 +244,41 @@ TText.can.textToScroll = ➮(para, pos) {
 }
 
 TText.can.deleteText = ➮ (sel) {
-	∇ A = sel.get()
+	A ∆ sel.get()
 	⌥ (A ≟ ∅) $
 	⚫alertChange()
 	⚫modified = ⦿
-	∇ B = A.b
+	B ∆ A.b
 	A = A.a
 	A = [A.y, A.x], B = [B.y, B.x]
 
-	∇ L = ⚫undoList, continueTyping = ⦾
+	L ∆ ⚫undoList, continueTyping = ⦾
 	⌥ (A⁰ ≟ B⁰ && L ↥ > 0) {
 		∇ U = L[L ↥ - 1]
 		⌥ (U.action ≟ '=' && U.para ≟ A⁰) continueTyping = ⦿
 		⌥ (⚫flushed) continueTyping = ⚫flushed = ⦾
-	 }
+	}
 	⌥ (!continueTyping) ⚫undoNext()
 
 	//if (!continueTyping) 
 	⚫undoAdd({
 		action: '=', para: A⁰, 
-		text:  ⚫L[A⁰],
+		text:  ⚫L0[A⁰],
 		before: [B⁰, B¹], after: [A⁰, A¹],
 	})
 
 	⌥ (A⁰ ≟ B⁰) {
-		⚫L[A⁰] = deleteString(⚫L[A⁰], A¹, B¹)
+		⚫L0[A⁰] = deleteString(⚫L0[A⁰], A¹, B¹)
 	} ⎇ {
-		⚫L[A⁰] = deleteString(⚫L[A⁰], A¹, ⚫L[A⁰] ↥) + deleteString(⚫L[B⁰], 0, B¹)
+		⚫L0[A⁰] = deleteString(⚫L0[A⁰], A¹, ⚫L0[A⁰]↥) + deleteString(⚫L0[B⁰], 0, B¹)
 		⚫undoAdd({
 			action: '+', para: A⁰ + 1, 
-			items:  ⚫L⋃(A⁰ + 1, B⁰ + 1),
+			items:  ⚫L0⋃(A⁰ + 1, B⁰ + 1),
 			before: [A⁰, A¹], after: [B⁰, B¹],
 		})
-		⚫L⨄(A⁰ + 1, B⁰ - A⁰)
+		⚫L0⨄(A⁰ + 1, B⁰ - A⁰)
 	}
+	⚫cache = [] // TODO: only delete proper lines
 	$ A
 }
 
@@ -276,32 +286,34 @@ TText.can.changeLine = ➮(y, f) {
 	//this.undoBegin()
 	⚫undoAdd({
 		action: '=', para: y,
-		text:  ⚫Lʸ,
+		text:  ⚫L0ʸ,
 		before: [y, 0], after: [y, 0],
 	})
-	⚫Lʸ = f(⚫Lʸ)
+	⚫cacheʸ = ∅
+	⚫L0ʸ = f(⚫L0ʸ)
 	//this.undoEnd()
 }
 
 TText.can.insertTextAt = ➮(txt, para, sym) {
 	⚫modified = ⦿
+	⚫cache = []
 	∇ L = ⚫undoList, continueTyping = ⦾
 	⌥ (txt ↥ ≟ 1 && L ↥ > 0) {
 		∇ U = Lꕉ
 		⌥ (U.action ≟ '=' && U.para ≟ para) continueTyping = ⦿
 		⌥ (⚫flushed) continueTyping = ⦾, ⚫flushed = ⦾
-	 }
+	}
 	⌥ (!continueTyping) ⚫undoNext()
-	∇ s = ⚫L[para], a = s⩪(0, sym), b = s⩪(sym, s↥ - sym)
+	∇ s = ⚫L0[para], a = s⩪(0, sym), b = s⩪(sym, s↥ - sym)
 	∇ T = txt⌶('\n')
 	⌥ (!continueTyping) ⚫undoAdd({
 		action: '=', para: para, 
-		text:  ⚫L[para],
+		text:  ⚫L0[para],
 		before: [para, sym], after: [para, sym + txt ↥],
 	}) ⦙ ⎇ U.after = [para, sym + txt ↥]
 	⚫alertChange()
 	⌥ (T ↥ ≟ 1) {
-		⚫L[para] = a + T + b
+		⚫L0[para] = a + T + b
 		$ { para: para, sym: sym + txt ↥}
 	}
 	∇ P = { para: para + T↥ - 1, sym: Tꕉ↥}
@@ -311,7 +323,7 @@ TText.can.insertTextAt = ➮(txt, para, sym) {
 	})
 	T⁰ = a + T⁰
 	Tꕉ += b
-	⚫L⨄.apply(⚫L, [para, 1]ꗚ(T))
+	⚫L0.splice.apply(⚫L0, [para, 1]ꗚ(T))
 	$ P
 }
 
@@ -320,21 +332,25 @@ TText.can.getSelText = ➮(selection) {
 	∇ sel = selection.get()
 	∇ A = sel.a, B = sel.b, R = []
 	⧗ (∇ i = A.y ⦙ i <= B.y ⦙ i++) {
-		∇ a ⊜, b = ⚫Lⁱ ↥
+		∇ a ⊜, b = ⚫L0ⁱ ↥
 		⌥ (i ≟ A.y) a = A.x
 		⌥ (i ≟ B.y) b = B.x
-		R ⬊(⚫Lⁱ⩪(a, b - a))
+		R ⬊(⚫L0ⁱ⩪(a, b - a))
 	}
 	$ R⫴('\n')
 }
 
 TText.can.getText = ➮{
-	$ ⚫L⫴('\n')
+	$ ⚫L0⫴('\n')
+}
+
+TText.can.getTextOf = ➮{
+	$ ⚫L0ᵃ
 }
 
 TText.can.setText = ➮(s) {
 	⌥ (s ≟ ∅) s = ''
-	⚫L = s.replace(/\r/g, '')⌶('\n')
+	⚫L0 = s.replace(/\r/g, '')⌶('\n')
 	⚫undoClear()
 }
 
@@ -360,7 +376,7 @@ TText.can.undoEnd = ➮{
 
 TText.can.undoFlush = ➮ {
 //ロ ⚫undoID, ⚫undoList, ⚫redoList
-//	⚫undoID++
+//   ⚫undoID++
 	⚫flushed = ⦿
 }
 
@@ -388,20 +404,20 @@ TText.can.undoAction = ➮(L, R) {
 	⧖ (R ↥ > 0 && R[R ↥ - 1].id ≟ id) {
 		∇ A = R.pop(), U
 		⌥ (A.action ≟ '=') {
-			∇ s = ⚫L[A.para]
-			⚫L[A.para] = A.text
+			∇ s = ⚫L0[A.para]
+			⚫L0[A.para] = A.text
 			A.text = s
 			L ⬊(A)
 			ret = A.before
 			swap()
 		} ⥹ (A.action ≟ '-') {
-			∇ D = ⚫L⨄(A.para, A.count)
+			∇ D = ⚫L0⨄(A.para, A.count)
 			A.items = D
 			A.action = '+'
 			L ⬊(A)
 			ret = A.before
 		} ⥹ (A.action ≟ '+') {
-			⚫L⨄.apply(⚫L, [A.para, 0]ꗚ(A.items))
+			⚫L0.splice.apply(⚫L0, [A.para, 0]ꗚ(A.items))
 			A.count = A.items ↥
 			⏀ A.items
 			A.action = '-'

@@ -18,7 +18,7 @@
 		}
 */
 
-⏀ ≣.cache[≣.resolve('./palette')]
+⏀ require.cache[require.resolve('./palette')]
 
 ⏀ getColor
 
@@ -96,7 +96,7 @@ getColor = {
 		{ name: 'c', ext: ['.cpp','.c','.h'], text: 0xb1c },
 		{ name: 'js', ext: ['.js'], text: 0xf3e },
 		{ name: 'yy', ext: ['.yy'], text: 0x18c },
-		{ name: 'asm', ext: ['.asm',, '.inc'], text: 0x80f },
+		{ name: 'asm', ext: ['.asm', '.inc'], text: 0x80f },
 	]
 	
 }
@@ -118,7 +118,7 @@ getColor.filelist² = a⁹
 		{ name: 'c', ext: ['.cpp','.c','.h'], text: a[13] },
 		{ name: 'js', ext: ['.js'], text: a⁸ },
 		{ name: 'yy', ext: ['.yy'], text: a[14] },
-		{ name: 'asm', ext: ['.asm',, '.inc'], text: a⁸ },
+		{ name: 'asm', ext: ['.asm', '.inc'], text: a⁸ },
 	]
 }
 */

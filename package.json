@@ -1,8 +1,14 @@
 {
+  "main": "intervision.yy",
   "name": "intervision",
-  "version": "0.0.1",
+  "version": "0.0.12",
+  "dependencies": {
+    "dnaof": "0.0.x",
+    "elfu": "0.0.x",
+    "glxwin": "0.0.x",
+    "room":"0.0.x"
+  },
   "description": "embeddable char-based window and event, Borland-inspired lib",
-  "main": "intervision.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

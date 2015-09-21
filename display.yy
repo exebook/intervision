@@ -10,24 +10,9 @@
 
 SCREEN = { T:null, C:null, W:0, H:0, O:0, x:0, y:0 }
 
+var CU = 0, CN = 0
 ➮ renderView win view atx aty {
-//	var Ta = new Uint16Array(view.w * view.h)
-//	var Ca = new Uint32Array(view.w * view.h)
-//	var N = 0
-//	for (var y = 0; y < view.h; y++) {
-//		for (var x = 0; x < view.w; x++) {
-//			var ch = 32, clr = 0xfff
-//			var o = view.get(x, y)
-//			if (o != undefined) {
-//				if (o.ch != undefined) ch = o.ch.charCodeAt(0)
-//				if (o.fg != undefined) clr = o.fg & 0xffff
-//				if (o.bg != undefined) clr = clr | (o.bg & 0xffff) << 16
-//			}
-//			Ta[N + x] = ch, Ca[N + x] = clr
-//		}
-//		N += view.w
-//	}
-	win.colorTextNew(0, 0, view.w, view.h, SCREEN.T, SCREEN.C)
+	win.colorText(0, 0, view.w, view.h, SCREEN.T, SCREEN.C)
 }
 
 
@@ -56,7 +41,7 @@ TGLXVision.can.init = ➮(fontPath, fontSize, desktopKind, W, H) {
 }
 
 TGLXVision.can.caretDraw= ➮{
-	⌥ (SCREEN.caret ≠ ∅ && ⚫caretDisabled ≠ ⦿) {
+		⌥ (SCREEN.caret ≠ ∅ && ⚫caretDisabled ≠ ⦿) {
 		⚫paintBegin()
 		∇ x = SCREEN.caret.x, y = SCREEN.caret.y
 		∇ ch = 32, clr = 0xfff
@@ -66,10 +51,11 @@ TGLXVision.can.caretDraw= ➮{
 			⌥ (o.fg ≠ ∅) clr = o.fg & 0xffff
 			⌥ (o.bg ≠ ∅) clr = clr | (o.bg & 0xffff) << 16
 		}
-		∇ TEXT = [[]], COLOR = [[]]
-		TEXT⁰⁰ = ch, COLOR⁰⁰ = clr
-		x = ⚫fnt⁰ * x, y = ⚫fnt¹ * y
+		TEXT = new Uint16Array(1)
+		COLOR = new Uint32Array(1)
+		TEXT⁰ = ch, COLOR⁰ = clr
 		⚫colorText(x, y, 1, 1, TEXT, COLOR)
+		x = ⚫fnt⁰ * x, y = ⚫fnt¹ * y
 		⌥ (⚫caretFlash ≟ ⦿) {
 			∇ C = 0xff008800, c
 			⌥ (SCREEN.caret.color) {
@@ -104,8 +90,8 @@ TGLXVision.can.onSize = ➮(w, h) {
 	⌛(⚫repaint.bind(⚪), 30)
 	SCREEN.T = ⟡ Uint16Array(W*H)
 	SCREEN.C = ⟡ Uint32Array(W*H)
-i ⬌ SCREEN.T { SCREEN.Tⁱ = 32 }
-i ⬌ SCREEN.C { SCREEN.Cⁱ = 0x777 }
+	i ⬌ SCREEN.T { SCREEN.Tⁱ = 32 }
+	i ⬌ SCREEN.C { SCREEN.Cⁱ = 0x777 }
 }
 
 TGLXVision.can.onPaint = ➮{
@@ -114,7 +100,7 @@ TGLXVision.can.onPaint = ➮{
 	∇ W = ⚫desktop.w, H = ⚫desktop.h
 	SCREEN.W = W
 	SCREEN.H = H
-	⚫crect(0, 0, A², A³, 0xff000000)
+//	⚫crect(0, 0, A², A³, 0xff000000)
 	⌥ (⚫caretOnly ≟ ⦿) $
 //	try { // TODO: make all C++ win::callbacks automagic with error and backtrace
 	⚫desktop.draw({ active:⦿, focused: ⦿ })

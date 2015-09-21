@@ -1,7 +1,7 @@
-require('dotcall')
-require('./dnaof')
-glxwin = require('../../glxwin/glxwin.js')
-require('../intervision')
+require('elfu')
+require('dnaof')
+glxwin = require('glxwin')//''../../glxwin/glxwin.js')
+require('intervision')
 log= console.log
 var count = 0
 
@@ -36,6 +36,7 @@ addSplit = function(view, vert, depth) {
 }
 
 fixSize = function(view, x, y, w, h, depth) {
+	if (view.L == undefined) return
 	if ((depth & 1) == 0) {
 		var W = (w >> 1)
 		view.L.pos(x, y)

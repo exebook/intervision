@@ -238,7 +238,7 @@ TFileEdit.can.init = ➮(fileName) {
 	∇ N = findFileMem(fileName)
 	⌥ (N) {
 		⚫para = N.para, ⚫sym = N.sym, ⚫delta = N.delta
-		⌥ (⚫para >= ⚫text.L ↥ - 1) ⚫para = ⚫text.L ↥ - 1, ⚫sym ⊜
+		⌥ (⚫para >= ⚫text.paraCount() - 1) ⚫para = ⚫text.paraCount() - 1, ⚫sym ⊜
 	}
 	⚫react(0, keycode.F2, ⚫save)
 	⚫react(100, keycode['s'], ⚫save)
@@ -246,11 +246,34 @@ TFileEdit.can.init = ➮(fileName) {
 	⚫react(101, keycode['t'], ⚫nextTheme)
 	⚫react(10, keycode.UP, ⚫openGuide)
 	⚫react(10, keycode.DOWN, ⚫openGuide)
-	⚫react(10, keycode.RIGHT, ⚫openGuide)
-	⚫react(10, keycode.LEFT, ⚫openGuide)
+	⚫react(10, keycode.RIGHT, ⚫quickToNextFile, {arg:'right'})
+	⚫react(10, keycode.LEFT, ⚫quickToNextFile, {arg:'left'})
 	⚫react(100, keycode.CAPS_LOCK, ⚫openGuide)
 //	⚫react(0, keycode['`'], ➮ { room.say('guide open')⦙$⦿ })
 //	⚫react(100, keycode['`'], ➮ { ⚫insertText('`') })
+}
+
+TFileEdit.can.quickToNextFile = ➮ {
+	L ∆ loadGuideConfig()
+	∇ fileName
+	i ⬌ L {
+		⌥ (Lⁱ.path ≟ ⚫fileName) {
+			⌥ (a ≟ 'right') {
+				⌥ (++i < L↥) fileName = Lⁱ.path
+			}
+			⥹ (a ≟ 'left') {
+				⌥ (--i >= 0) fileName = Lⁱ.path
+			}
+			@
+		}
+	}
+	⌥ (fileName) {
+		⚫close()
+		viewer ∆ viewFile(⚫getDesktop(), fileName, TFileEdit)
+		⌥ (viewer) {
+			viewer.norton = ⚫parent.norton
+		}
+	}
 }
 
 TFileEdit.can.openGuide = ➮ {
@@ -259,12 +282,11 @@ TFileEdit.can.openGuide = ➮ {
 	signal('guide', 'clean')
 	wait('guide', 'select', ➮ {
 		me.close()
-//		ロ 'Signal2', a
-		∇ viewer = viewFile(me.getDesktop(), a, TFileEdit)
+		resortGuideConfig(a)
+		viewer ∆ viewFile(me.getDesktop(), a, TFileEdit)
 		⌥ (viewer) {
 			viewer.norton = me.parent.norton
 		}
-//		me.viewFileName(TFileEdit, a)
 	})
 	$⦿
 }

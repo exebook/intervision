@@ -15,7 +15,8 @@ TObject.can.init = ➮{
 ≣('./window')
 ≣('./list')
 ≣('./qfind')
-≣('./text')
+⌥(⬤ NEWEDIT != 'undefined') ≣ './text/flow'
+⎇ ≣('./text')
 ≣('./edit')
 ≣('./viewer')
 ≣('./control')

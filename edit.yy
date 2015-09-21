@@ -123,6 +123,24 @@ TEdit.can.size = ➮(w, h) {
 	}
 }
 
+➮ parseDrawCommand s state {
+	⌥ (s⁰ ≟ '/' && s¹ ≟ '/' && s² ≟ '-' && s³ ≟ '-') {
+		s = s ⌶('//--')¹
+		s = s ⌶ ' '
+		cmd ∆ s⁰
+		id ∆ s¹
+		a ∆ s²
+		⌥ (cmd ≟ 'on') {
+			a = parseInt('0x'+a, 16)
+//			ロ 'a=', a, a.toString(16)
+			state ⬊( { id: id, color: a } )
+		}
+		⌥ (cmd ≟ 'off') {
+			state ⬈
+		}
+	}
+}
+
 TEdit.can.draw = ➮(state) {
 	dnaof(⚪, state)
 	∇
@@ -142,8 +160,10 @@ TEdit.can.draw = ➮(state) {
 	⎇ ⏀ SCREEN.caret
 	∇ braceLevel ⊜, curlyLevel ⊜, B, F
 	∇ lineComment = ⦾, keyw = keyw0 = 10//7-ok
+	∇ cmdState = []
 	l ⬌ lines {
 		∇ line = linesˡ
+		parseDrawCommand(line.s, cmdState)
 		⌥ (match) colorizeMatch(line, match)
 		B = ⚫pal¹
 		⌥ (sel) {
@@ -155,10 +175,11 @@ TEdit.can.draw = ➮(state) {
 		}
 		∇ px ⊜
 		⌥ (match) colorizeMatch(line, match, -1)
-		⌥ (line.part ≟ 0) lineComment = ⦾, keyw = keyw0
+		⌥ (line.first) lineComment = ⦾, keyw = keyw0
 		∇ lineHilite = ⚫curLineHilite && (caret⁰ - ⚫delta ≟ l)
 		x ⬌ line.s {
 			B = ⚫pal¹
+			⌥ (cmdState↥ > 0) B = cmdStateꕉ.color
 			∇ X = line.wˣ
 			∇ char = line.sˣ, P = line.cˣ
 			⌥ (P ≟ -1) {
@@ -211,7 +232,15 @@ TEdit.can.draw = ➮(state) {
 			B = ⚫pal¹
 			∇ ch = ' '
 			⌥ (sel && sel.a⁰ <= Y && sel.b⁰ > Y) B = ⚫pal⁴, ch = '¶'
-			⚫set(line.w[line.s ↥], l, ch, ⚫pal⁰ | 0xa000, B)
+			cx ∆ line.w[line.s ↥]
+			⚫set(cx, l, ch, ⚫pal⁰ | 0xa000, B)
+			⌥ (cmdState↥ > 0) {
+				⧖ (cx < ⚫w) {
+					a ∆ cmdStateꕉ.color
+					⚫set(cx, l, ' ', 0, a)
+					cx++
+				}
+			}
 		}
 		⌥ (lineHilite) {
 			B = blend(B, 0x1, 0xfff)
@@ -230,8 +259,8 @@ TEdit.can.updateTargetX = ➮{
 	⚫targetX = A¹
 }
 
-TEdit.can.moveCursor = ➮(arg) { ☛ (⚪) {
-	text.undoFlush()
+TEdit.can.moveCursor = ➮(arg, noFlush) { ☛ (⚪) {
+	⌥ (noFlush != ⦿) text.undoFlush()
 	∇ me = ⚪
 	➮ newX { ☛ (me) {
 		∇ A = text.textToScroll(para, sym)
@@ -242,13 +271,13 @@ TEdit.can.moveCursor = ➮(arg) { ☛ (⚪) {
 		sym--
 		⌥ (sym < 0) {
 			sym ⊜
-			⌥ (para > 0)  sym = ⚫text.L[--para] ↥
+			⌥ (para > 0)  sym = ⚫text.lengthOfPara(--para)
 		}
 		updateTargetX()
 	} ⥹ (arg ≟ 'right') {
 		sym++
-		⌥ (sym > text.L[para] ↥) {
-			⌥ (para < text.L ↥ - 1) {
+		⌥ (sym > text.lengthOfPara(para)) {
+			⌥ (para < text.paraCount() - 1) {
 				sym ⊜
 				para++
 			} ⎇ sym--
@@ -295,16 +324,16 @@ TEdit.can.moveCursor = ➮(arg) { ☛ (⚪) {
 	} ⥹ (arg ≟ 'wordleft') {
 		∇ A = text.textToScroll(para, sym)
 		⌥ (A¹ ≟ 0) $ moveCursor('left')
-		∇ line = text.L[para]
+		∇ line = text.getTextOf(para)
 		∇ xpos = wordLeft(line, sym)
 		A = text.textToScroll(para, xpos)
 		targetX = A¹
 		sym = xpos
 	} ⥹ (arg ≟ 'wordright') {
 		∇ A = text.textToScroll(para, sym)
-		∇ q = text.getLines(A⁰)⁰ ↥
+		∇ q = text.getLineLength(A⁰)
 		⌥ (A¹ ≟ q) $ moveCursor('right')
-		∇ line = text.L[para]
+		∇ line = text.getTextOf(para)
 		∇ xpos = wordRight(line, sym)
 		A = text.textToScroll(para, xpos)
 		targetX = A¹
@@ -313,7 +342,7 @@ TEdit.can.moveCursor = ➮(arg) { ☛ (⚪) {
 		para ⊜
 		newX()
 	} ⥹ (arg ≟ 'bottom') {
-		para = text.L ↥ - 1
+		para = text.paraCount() - 1
 		newX()
 	}
 }}
@@ -338,8 +367,9 @@ TEdit.can.scrollToView = ➮ { ☛ (⚪) {
 TEdit.can.shiftSel = ➮(arg) {
 	⌥ (arg ≟ 'all') {
 		⚫sel.start(0, 0)
-		∇ q = ⚫text.L ↥ - 1
-		⚫sel.end(q, ⚫text.Lʱ ↥)
+		c ∆ ⚫text.paraCount() - 1
+		e ∆ ⚫text.lengthOfPara(c)
+		⚫sel.end(c, e)
 		$ ⦿
 	}
 	⌥ (⚫sel.clean()) ⚫sel.start(⚫para, ⚫sym)
@@ -379,9 +409,9 @@ TEdit.can.commandLineDelete = ➮{ ☛ (⚪) {
 	∇ A = text.textToScroll(para, sym), B = [A⁰ + 1, 0]
 	A¹ ⊜
 	⌥ (A⁰ ≟ H - 1) {
-		∇ line = text.getLines(A⁰, 1)⁰
+		∇ len = text.getLineLength(A⁰)
 		B⁰ = A⁰
-		B¹ = line ↥
+		B¹ = len
 	}
 	A = text.scrollToText(A⁰, A¹)
 	B = text.scrollToText(B⁰, B¹)
@@ -427,14 +457,14 @@ TEdit.can.deleteTo = ➮(arg) {
 		⌥ (arg ≟ 'wordright') {
 			∇ i ⊜, s = '', spaceCount, prevLength ⊜, startType
 			∞ {
-				⚫moveCursor('right')
+				⚫moveCursor('right', ⦿)
 				⚫sel.end(⚫para, ⚫sym)
 				s = ⚫text.getSelText(⚫sel)
 				⌥ (prevLength ≟ s ↥) @
 				⌥ (s ↥ ≟ 1) startType = ⚫text.lexer.charType(s⁰)
 				⎇ {
 					⌥ (⚫text.lexer.charType(s[s ↥ - 1]) ≠ startType) {
-						⚫moveCursor('left')
+						⚫moveCursor('left', ⦿)
 						⚫sel.end(⚫para, ⚫sym)
 						s = ⚫text.getSelText(⚫sel)
 						@
@@ -446,12 +476,13 @@ TEdit.can.deleteTo = ➮(arg) {
 				$ ⚫insertText(' ')
 			}
 		} ⎇ {
-			⚫moveCursor(arg)
+			⚫moveCursor(arg, ⦿)
 			⚫sel.end(⚫para, ⚫sym)
 		}
 		⌥ (⚫sel.clean()) $ ⦿
 	}
 	s = ⚫text.getSelText(⚫sel)
+	⚫text.flushed = ⦾
 	⚫deleteSelected()
 	⚫scrollToView()
 	⚫getDesktop().display.caretReset()
@@ -505,7 +536,7 @@ TEdit.can.onKey = ➮(hand) {
 }
 
 TEdit.can.commandEnter = ➮ {
-	∇ i ⊜, s = ⚫text.L[⚫para], t = ''
+	∇ i ⊜, s = ⚫text.getTextOf(⚫para), t = ''
 	∇ n = ⚫sym
 	⧖ (n < s ↥ && (sⁿ ≟ ' ' || sⁿ ≟ '\t')) n++
 	n -= ⚫sym
@@ -589,8 +620,8 @@ TEdit.can.onCapture = ➮(hand) {
 }
 
 ➮ extendSelWord sel {
-	sel.a.x = wordLeft(⚫L[sel.a.y], sel.a.x)
-	sel.b.x = wordRight(⚫L[sel.b.y], sel.b.x)
+	sel.a.x = wordLeft(⚫getTextOf(sel.a.y), sel.a.x)
+	sel.b.x = wordRight(⚫getTextOf(sel.b.y), sel.b.x)
 	$ sel
 }
 
@@ -603,8 +634,8 @@ TEdit.can.mouseSelect = ➮(hand, noGlobal) {
 		⚫sel.clear()
 		⚫sel.start(⚫para, ⚫sym, extendSelWord.bind(⚫text))
 		⚫sel.end(⚫para, ⚫sym)
-//		var ax = wordLeft(this.text.L[this.para], this.sym)
-		∇ bx = wordRight(⚫text.L[⚫para], ⚫sym)
+//		var ax = wordLeft(this.text.getTextOf(this.para), this.sym)
+		∇ bx = wordRight(⚫text.getTextOf(⚫para), ⚫sym)
 		⚫sym = bx
 		⚫mouseSelecting = ⦿
 		$ ⦿
@@ -738,11 +769,10 @@ TEdit.can.unindentWith = ➮(sub) {
 		a = S.a.y, b = S.b.y
 		⌥ (S.b.x ≟ 0) b--
 	}
-	∇ L = ⚫text.L
 	⚫text.undoBegin()
 	∇ T = TSelection.create(), mova ⊜, movb ⊜
 	⧗ (∇ y = a ⦙ y <= b ⦙ y++) {
-		⌥ (Lʸ⩪(0, sub ↥) ≟ sub) {
+		⌥ (⚫text.getTextOf(y)⩪(0, sub ↥) ≟ sub) {
 			⌥ (y ≟ a) mova = sub ↥
 			⌥ (y ≟ b) movb = sub ↥
 			T.start(y, 0), T.end(y, sub ↥)
@@ -763,8 +793,8 @@ TEdit.can.commandComment = ➮(arg) {
 	∇ REM = ⚫text.lexer.lineComment
 	⌥ (arg ≟ 'comment') {
 		⌥ (⚫sel.clean()) {
-			∇ last = ⚫text.L ↥ - 1
-			⌥ (⚫para ≠ last || ⚫text.L[last]⩪(0, 2) ≠ REM)
+			∇ last = ⚫text.paraCount() - 1
+			⌥ (⚫para ≠ last || ⚫text.getTextOf(last)⩪(0, 2) ≠ REM)
 			⚫text.insertTextAt(REM, ⚫para, 0)
 			⌥ (⚫para ≠ last) ⚫moveCursor('down')
 		} ⎇
@@ -782,7 +812,7 @@ TEdit.can.convertSpacesToTab = ➮{
 	⌥ (S.b.x ≟ 0) b--
 	∇ steps = {}
 	⧗ (∇ y = a ⦙ y <= b ⦙ y++) {
-		∇ s = ⚫text.Lʸ.replace('\t', '   ')
+		∇ s = ⚫text.getTextOf(y).replace('\t', '   ')
 		∇ spaces ⊜
 		i ⬌ s ⌥ (sⁱ ≟ ' ') spaces++ ⦙ ⎇ @
 		steps[spaces] = ⦿
@@ -806,11 +836,13 @@ TEdit.can.convertSpacesToTab = ➮{
 TEdit.can.tabCompletion = ➮{
 	⌥ (!⚫sel.clean()) $
 	∇ a = ⚫para, b = ⚫sym
-	∇ s = ⚫text.Lᵃ, t = ''
+	∇ s = ⚫text.getTextOf(a), t = ''
 	⧖ (--b >= 0) {
 		∇ c = sᵇ, 
-			ok = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') 
-			|| (c >= 'A' && c <= 'Z') || c ≟ '.'
+			ok = (c >= '0' && c <= '9')
+			|| (c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я')
+			|| (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+			|| c ≟ '.' || c ≟ ';'
 		⌥ (ok) t = c + t ⦙ ⎇ @
 		⌥ (c ≟ '.') @
 	}
@@ -865,7 +897,7 @@ TEdit.can.setText = ➮(s) {
 	⚫sel.clear()
 	⚫para ⊜
 	⚫sym ⊜
-	⌥ (⚫text.L ↥ ≟ 1) {
+	⌥ (⚫text.paraCount() ≟ 1) {
 		⚫shiftSel('all')
 		⚫sym = s ↥
 	} ⎇ {
@@ -878,7 +910,7 @@ TEdit.can.commandGoToLine = ➮{
 	∇ me = ⚪
 	∇ win = TInputBox.create(45, 'Переход', 'Номер строки', ➮(text) {
 		me.para = ★(text - 1)
-		⌥ (me.para > me.text.L ↥ - 1) me.para = me.text.L ↥ - 1
+		⌥ (me.para > me.text.paraCount() - 1) me.para = me.text.paraCount() - 1
 		me.sym ⊜
 		me.scrollToView()
 	})
@@ -888,7 +920,7 @@ TEdit.can.commandGoToLine = ➮{
 
 TEdit.can.commandFindPrev = ➮{
 	∇ me = ⚪
-	∇ t = me.text.L, c = t ↥, match
+	∇ c = ⚫text.paraCount(), match
 	⧗ (∇ p = me.para - 1 ⦙ p >= 0 ⦙ p--) {
 		∇ sym = tᵖ≀(me.textToFind)
 		⌥ (sym >= 0) {
@@ -897,7 +929,7 @@ TEdit.can.commandFindPrev = ➮{
 		}
 	}
 	⌥ (match ≟ ∅) ⧗ (∇ p = c - 1 ⦙ p >= me.para ⦙ p--) {
-		∇ sym = tᵖ≀(me.textToFind)
+		∇ sym = ⚫text.getTextOf(p)≀(me.textToFind)
 		⌥ (sym >= 0) {
 			match = { para:p, sym: sym }
 			@
@@ -954,19 +986,19 @@ TEdit.can.commandFindNext = ➮(next) {
 			me.text.insertTextAt(me.replace, S.a.y, S.a.x)
 		}
 	}
-	∇ t = me.text.L, c = t ↥, match, S = me.sel.get()
+	∇ c = ⚫text.paraCount(), match, S = me.sel.get()
 	⌥ (S) { me.sym = S.b.x }
-	∇ sym = t[me.para]≀(me.textToFind, me.sym)
+	∇ sym = ⚫text.getTextOf(me.para)≀(me.textToFind, me.sym)
 	⌥ (sym >= 0) match = { para:me.para, sym: sym }
 	⌥ (match ≟ ∅) ⧗ (∇ p = me.para + 1 ⦙ p < c ⦙ p++) {
-		∇ sym = tᵖ≀(me.textToFind)
+		∇ sym = ⚫text.getTextOf(p)≀(me.textToFind)
 		⌥ (sym >= 0) {
 			match = { para:p, sym: sym }
 			@
 		}
 	}
 	⌥ (match ≟ ∅) ⧗ (∇ p ⊜ ⦙ p <= me.para ⦙ p++) {
-		∇ sym = tᵖ≀(me.textToFind)
+		∇ sym = ⚫text.getTextOf(p)≀(me.textToFind)
 		⌥ (sym >= 0) {
 			match = { para:p, sym: sym }
 			@
