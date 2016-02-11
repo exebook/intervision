@@ -1,3 +1,8 @@
+/*
+First off, I'd suggest printing out a copy of the GNU coding standards, and NOT read it. Burn them, it's a great symbolic gesture.
+			Linus Torvalds
+*/
+
 THexView = kindof(TView)
 
 THexView.can.init = ➮(fileName) {
@@ -6,6 +11,8 @@ THexView.can.init = ➮(fileName) {
 	⚫symWidth = 3
 	⚫base = 16
 	⚫bytes = 1
+	⚫lined = ⦿
+	⚫utf8 = ⦿
 	⚫setMode('overlay')
 	⚫lines = []
 	⚫name = 'THexView'
@@ -23,6 +30,8 @@ THexView.can.init = ➮(fileName) {
 	⚫react(0, keycode['1'], ⚫setBase, {arg:16})
 	⚫react(0, keycode['2'], ⚫setBase, {arg:10})
 	⚫react(0, keycode['3'], ⚫setBase, {arg:8})
+	⚫react(0, keycode['u'], ⚫setMode, {arg:'utf8'})
+	⚫react(0, keycode['t'], ⚫setMode, {arg:'lined'})
 	⚫react(0, keycode['r'], ⚫setMode, {arg:'overlay'})
 	⚫react(0, keycode['e'], ⚫setMode, {arg:'double'})
 	⚫react(0, keycode['q'], ⚫setMode, {arg:'number'})
@@ -44,12 +53,18 @@ THexView.can.setBase = ➮(arg) {
 	$ ⦿
 }
 
-THexView.can.setMode = ➮(arg) {
-	⚫mode = arg
-	⌥ (arg ≟ 'number') ⚫rows = 1, ⚫setBase(⚫base)
-	⌥ (arg ≟ 'text') ⚫rows = 1, ⚫symWidth = 1
-	⌥ (arg ≟ 'double') ⚫rows = 2, ⚫setBase(⚫base)
-	⌥ (arg ≟ 'overlay') ⚫rows = 1, ⚫setBase(⚫base)
+THexView.can.setMode = ➮ {
+	⚫mode = a
+	⌥ (a ≟ 'utf8') {
+		⚫utf8 = !⚫utf8
+//		⌥ ⚫utf8 { symWidth = 5 } ⎇ symWidth = 2
+	}
+	⌥ (a ≟ 'lined') ⚫lined = !⚫lined
+	⌥ (a ≟ 'number') ⚫rows = 1, ⚫setBase(⚫base)
+	⌥ (a ≟ 'text') ⚫rows = 1, ⚫symWidth = 1
+	⌥ (a ≟ 'double') ⚫rows = 2, ⚫setBase(⚫base)
+	⌥ (a ≟ 'overlay') ⚫rows = 1, ⚫setBase(⚫base)
+	ロ 'lined=', ⚫lined, 'rows=', ⚫rows, 'base=', ⚫base, 'symwidth=', ⚫symWidth
 	⚫loadBuf()
 	$ ⦿
 }
@@ -73,47 +88,54 @@ THexView.can.loadBuf = ➮{
 	}
 }
 
+➮ iconicChar n F {
+	icon = ⦿
+	⌥ (n ≟ 0) n = '⁰'
+	⥹ (n ≟ 1) n = '¹'
+	⥹ (n ≟ 2) n = '²'
+	⥹ (n ≟ 3) n = '³'
+	⥹ (n ≟ 4) n = '⁴'
+	⥹ (n ≟ 5) n = '⁵'
+	⥹ (n ≟ 6) n = '⁶'
+	⥹ (n ≟ 7) n = '⁷'
+	⥹ (n ≟ 8) n = '⁸'
+	⥹ (n ≟ 9) n = '⇥'
+	⥹ (n ≟ 10) n = '↵'//'⏎'//'░'
+	⥹ (n ≟ 11) n = '¹¹'
+	⥹ (n ≟ 13) n = '⏎'//←
+	⎇ icon = ⦾
+	⌥ (icon) F = ⚫pal⁵ //5-comment 7-number 0-id 
+	$[n,F]
+}
+
 THexView.can.draw = ➮{
-	∇ charList = '`~1!2@3#4$5%6^7&8*9(0)-_=+QWERTYUIOP{}qwertyuiop[]azsxdcfvgbhnjmk,l.;/\'AZSXDCFVGBHNJMK<L>:?" '
+	charList ∆ '`~1!2@3#4$5%6^7&8*9(0)-_=+QWERTYUIOP{}qwertyuiop[]azsxdcfvgbhnjmk,l.;/\'AZSXDCFVGBHNJMK<L>:?" '
 	dnaof(⚪)
-//	log(this.bytes)
 	∇ x ⊜, y ⊜, w = ⚫symWidth
 	∇ ch, num, F
-	⧗ (∇ i ⊜ ⦙ i < ⚫bytesRead || y > ⚫h ⦙ i++) {
+	⧗ (∇ i ⊜ ⦙ i < ⚫bytesRead && y < ⚫h ⦙ i++) {
 		num ∆ ∅ ch ∆ ∅ F ∆ ⚫pal⁷
-		∇ n = ⚫bufⁱ
-		⌥ (⚫mode ≟ 'text' || ⚫mode ≟ 'double' || 
-			(⚫mode ≟ 'overlay' && charList≀(String.fromCharCode(n)) >= 0))
-				ch = String.fromCharCode(n)
+		n ∆ ⚫bufⁱ
+		⌥ ⚫lined && n ≟ 10 {
+			x = 0, y++
+			⌥ y ≟ ⚫h {@}
+		}
+		⌥ (⚫mode ≟ 'text' || ⚫mode ≟ 'double' || ⚫mode ≟ 'lined' || 
+			(⚫mode ≟ 'overlay' && charList≀(∼◬n) >= 0))
+				ch = ∼◬n
 		icon ∆ ⦾
-		⌥ (⚫mode ≟ 'overlay' && ch ≟ ∅) {
-			icon = ⦿
-			⌥ (n ≟ 0) n = '⁰'
-			⥹ (n ≟ 1) n = '¹'
-			⥹ (n ≟ 2) n = '²'
-			⥹ (n ≟ 3) n = '³'
-			⥹ (n ≟ 4) n = '⁴'
-			⥹ (n ≟ 5) n = '⁵'
-			⥹ (n ≟ 6) n = '⁶'
-			⥹ (n ≟ 7) n = '⁷'
-			⥹ (n ≟ 8) n = '⁸'
-			⥹ (n ≟ 9) n = '⇥'
-			⥹ (n ≟ 10) n = '↵'//'⏎'//'░'
-			⥹ (n ≟ 11) n = '¹¹'
-			⥹ (n ≟ 13) n = '⏎'//←
-			⎇ icon = ⦾
-			⌥ (icon) F = ⚫pal⁵ //5-comment 7-number 0-id 
+		⌥ ((⚫mode ≟ 'overlay' || ⚫mode ≟ 'lined') && ch ≟ ∅) {
+			n,F ꔪ iconicChar ꘉ(⚪) (n, F)
 		}
 		⌥ (!icon) {
 			n = n≂ (⚫base)
 			⌥ (⚫mode ≟ 'overlay' && ch) n = ch, F = ⚫pal⁸
-			⥹ (⚫mode ≟ 'text') n = ch
+			⥹ (⚫mode ≟ 'text' || ⚫mode ≟ 'lined') n = ch
 			⎇ {
 				n = n.toUpperCase()
 				⧖ (n ↥ < (⚫bytes << 1)) n = '0' + n
 			}
 		}
-//		ロ ⚫pal
 		⚫print(x, y, n, F, ⚫pal¹)
 		⌥ (⚫rows ≟ 2) ⚫print(x, y + 1, ch, ⚫pal⁵, ⚫pal¹)
 		x += w ⦙ ⌥ ((x + w) >= ⚫w) x ⊜, y += ⚫rows

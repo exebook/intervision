@@ -38,7 +38,10 @@ TModalTextView.can.init = ➮(Desktop, fileName, viewClass, colors) {
 	⚫scrollBar.pal = [⚫viewer.pal⁰, ⚫viewer.pal¹]
 	⚫react(100, keycode.ESCAPE, ⚫close)//Prompt)
 	⚫react(100, keycode['o'], ⚫commandShowOutput)
+	⚫react(10, keycode['o'], ⚫commandShowOutput)
 	⚫react(0, keycode.F9, ⚫commandRun)
+	⚫react(10, keycode['x'], ⚫commandRun)
+	⚫react(110, keycode['x'], ⚫commandRunNew)
 	⚫react(100, keycode.F9, ⚫commandRunNew)
 	⚫react(100, keycode['c'], ⚫commandKill)
 	⚫actor = ⚫viewer
@@ -68,10 +71,12 @@ TModalTextView.can.commandRun = ➮{
 			⚫runCommand = N.command
 		} ⎇ $ ⚫commandRunNew()
 	}
-	⚫viewer.save()
+	⌥ ⚫viewer.isModified() {
+		⚫viewer.save()
+	}
 	∇ o = ⚫norton.output
-	o.size(⚫w - 2, ⚫h - 2) // НАДО: используй window.getInnerSize // а его пока нет 
-	o.pos(1, 1)
+//	o.size(⚫w - 2, ⚫h - 2) // НАДО: используй window.getInnerSize // а его пока нет 
+//	o.pos(1, 1)
 	∇ f = ⚫runDone.bind(⚪)
 	⚫showOutput()
 	o.respawn(⚫runCommand, '', ⚫runCwd, f)
@@ -101,6 +106,9 @@ TModalTextView.can.commandRunNew = ➮{
 	∇ s = ⚫runCommand
 	⌥ (s ≟ '') {
 		app ∆ './'
+		⌥ (⚫fileName≀('.scala') >= 0) app = 'scala '
+		⌥ (⚫fileName≀('.py') >= 0) app = 'python '
+		⌥ (⚫fileName≀('.rb') >= 0) app = 'ruby '
 		⌥ (⚫fileName≀('.yy') >= 0) app = 'yy '
 		⌥ (⚫fileName≀('.js') >= 0) app = 'node '
 		s = app + ⚫fileName⌶('/').pop()
@@ -116,7 +124,7 @@ TModalTextView.can.showOutput = ➮{
 	me.hide(me.viewer)
 	me.hide(me.scrollBar)
 	me.add(o)
-	me.actor = ∅
+	me.actor = o//∅
 	o.disabled = ⦿
 }
 
@@ -142,7 +150,9 @@ TModalTextView.can.close = ➮{
 		⚫hideOutput()
 		$
 	}
-	⌥ (⚫viewer.isModified ≠ ∅) ⚫viewer.savePosState()
+	//⌥ (⚫viewer.isModified ≠ ∅)
+ロ 'SAVING CURSOR POS'
+	⌥(⚫viewer.savePosState) ⚫viewer.savePosState() // лучше всегда сохранять?
 	dnaof(⚪)
 }
 
@@ -157,28 +167,41 @@ TModalTextView.can.closePrompt = ➮{
 	$ ⦿
 }
 
+TModalTextView.can.createModifiedWarning = ➮ {
+	∇ s = 'Control-Esc: выйти без сохранения'
+	⚫warn = TDialog.create()
+	⚫warn.title = 'Файл не сохранён'
+	⚫warn.size(s ↥ + 14, 6)
+	⚫warn.pos((⚫w - ⚫warn.w)>>1, (⚫h - ⚫warn.h)>>1)
+	∇ l
+	l = TLabel.create(s), l.pos(5, 5)
+	⚫warn.add(l, ⚫warn.w - 10, 1)
+	l = TLabel.create('F2 или Control-S: сохранить'), l.pos(5, 5)
+	⚫warn.add(l, ⚫warn.w - 10, 1)
+	⚫add(⚫warn)
+}
+
 TModalTextView.can.onKey = ➮(hand) {
-	⌥ (hand.plain && hand.key ≟ keycode.ESCAPE && hand.physical) {
+	onlyIfSaved ∆ (hand.plain && hand.key ≟ keycode.ESCAPE)
+	|| (hand.key ≟ keycode.LEFT && hand.mod.alt ≟ ⦿)
+	|| (hand.key ≟ keycode.RIGHT && hand.mod.alt ≟ ⦿)
+	|| (hand.key ≟ keycode.ENTER && hand.mod.control ≟ ⦿)
+	
+	⌥ (onlyIfSaved && hand.physical) {
 		// необычное решение
 		⌥ (⚫viewer.isModified ≟ ∅ 
 		 || ⚫viewer.isModified() ≟ ⦾) {
-			⌥ (hand.down) ⚫close() ⦙
-			$ ⦿
+			⌥ (hand.down && hand.key ≟ keycode.ESCAPE) {
+				⚫close()
+				$ ⦿
+			}
+			$ dnaof(⚪, hand) // dispatch hotkeys alt+left/right
 		}
 		⥹ (hand.down) {
+//			showModifiedWarning()
 			⌥ (⚫warn) ⚫warn.hidden = ⦾
 			⎇ {
-				∇ s = 'Control-Esc: выйти без сохранения'
-				⚫warn = TDialog.create()
-				⚫warn.title = 'Файл не сохранён'
-				⚫warn.size(s ↥ + 14, 6)
-				⚫warn.pos((⚫w - ⚫warn.w)>>1, (⚫h - ⚫warn.h)>>1)
-				∇ l
-				l = TLabel.create(s), l.pos(5, 5)
-				⚫warn.add(l, ⚫warn.w - 10, 1)
-				l = TLabel.create('F2 или Control-S: сохранить'), l.pos(5, 5)
-				⚫warn.add(l, ⚫warn.w - 10, 1)
-				⚫add(⚫warn)
+				⚫createModifiedWarning()
 			}
 			⚫actor = ⚫warn
 			⚫repaint()
@@ -244,16 +267,67 @@ TFileEdit.can.init = ➮(fileName) {
 	⚫react(100, keycode['s'], ⚫save)
 	⚫react(100, keycode['p'], ⚫reloadPalette)
 	⚫react(101, keycode['t'], ⚫nextTheme)
+
+	// THEY MUST GO TO PARENT (TWindow::TModalTextView)
+
 	⚫react(10, keycode.UP, ⚫openGuide)
 	⚫react(10, keycode.DOWN, ⚫openGuide)
 	⚫react(10, keycode.RIGHT, ⚫quickToNextFile, {arg:'right'})
 	⚫react(10, keycode.LEFT, ⚫quickToNextFile, {arg:'left'})
+	
 	⚫react(100, keycode.CAPS_LOCK, ⚫openGuide)
+	⚫react(100, keycode.ENTER, ⚫openFileAtCursor)
 //	⚫react(0, keycode['`'], ➮ { room.say('guide open')⦙$⦿ })
 //	⚫react(100, keycode['`'], ➮ { ⚫insertText('`') })
 }
 
+➮ extractPathFromLine s x {
+	chars ∆ 'QAZWSXEDCRFVTGBYHNUJMIKOLPqazwsxedcrfvtgbyhnujmikolp1234567890.-_/$~!'
+	a ∆ x  b ∆ x
+	⧖ (chars ≀ (s[a-1]) >= 0 && a > 0) a--
+	⧖ (chars ≀ (sᵇ) >= 0 && b < s↥) b++
+	$ s ⩪ (a, b-a)
+}
+
+TFileEdit.can.openFileAtCursor = ➮ {
+	A ∆ ⚫text.textToScroll(⚫para, ⚫sym)
+	s ∆ ⚫text.getLines(A⁰, 1)
+	txt ∆ s⁰.s
+	tab ∆ ''
+	⧖ (tab↥ < ⚫text.tab) tab += ' '
+	txt = txt.replace('\t', tab)
+	filePath ∆ extractPathFromLine(txt, A¹)
+	⌥ (filePath↥ ≟ 0) $
+	⌥ (filePath⁰ != '/') {
+		P ∆ ⚫fileName ⌶ '/'
+		P ⬈
+		P ⬊ filePath
+		filePath = P ⫴ '/'
+	}
+	ok ∆ ⦾
+	⌥ (fs.existsSync(filePath)) ok = ⦿
+	⎇ {
+		exts ∆ ['yy','js']
+		i ⬌ exts {
+			⌥ (fs.existsSync(filePath) + '.' + extsⁱ) {
+				filePath += '.' + extsⁱ
+				ok = ⦿
+				@
+			}
+		}
+	}
+	⌥ (ok) {
+		⚫close()
+		⌥ (resortGuideConfig) resortGuideConfig(filePath)
+		viewer ∆ viewFile(⚫getDesktop(), filePath, TFileEdit)
+		⌥ (viewer) {
+			viewer.norton = ⚫parent.norton
+		}
+	}
+}
+
 TFileEdit.can.quickToNextFile = ➮ {
+	⌥ (loadGuideConfig ≟ ∅) $
 	L ∆ loadGuideConfig()
 	∇ fileName
 	i ⬌ L {
@@ -268,11 +342,16 @@ TFileEdit.can.quickToNextFile = ➮ {
 		}
 	}
 	⌥ (fileName) {
+		⚫savePosState() // this must be all implemented in parent
+		// also must save selection in "state"
 		⚫close()
 		viewer ∆ viewFile(⚫getDesktop(), fileName, TFileEdit)
 		⌥ (viewer) {
 			viewer.norton = ⚫parent.norton
 		}
+	}
+	⎇ {
+		ロ 'fileName empty'
 	}
 }
 
@@ -282,7 +361,7 @@ TFileEdit.can.openGuide = ➮ {
 	signal('guide', 'clean')
 	wait('guide', 'select', ➮ {
 		me.close()
-		resortGuideConfig(a)
+		⌥ (resortGuideConfig) resortGuideConfig(a)
 		viewer ∆ viewFile(me.getDesktop(), a, TFileEdit)
 		⌥ (viewer) {
 			viewer.norton = me.parent.norton
@@ -292,6 +371,7 @@ TFileEdit.can.openGuide = ➮ {
 }
 
 TFileEdit.can.savePosState = ➮{
+	// TODO: save selection as well, but think of externally modified file(crc?)
 	∇ N = findFileMem(⚫fileName)
 	⌥ (N) {
 		N.para = ⚫para, N.sym = ⚫sym, N.delta = ⚫delta

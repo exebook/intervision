@@ -59,6 +59,8 @@ TEdit.can.init = ➮{
 	⚫react(0, keycode.DOWN, ⚫handleCursorKey, {arg:'down', role:['multi']})
 	⚫react(0, keycode.HOME, ⚫handleCursorKey, {arg:'home'})
 	⚫react(0, keycode.END, ⚫handleCursorKey, {arg:'end'})
+	⚫react(100, keycode[','], ⚫handleCursorKey, {arg:'home'})
+	⚫react(100, keycode['.'], ⚫handleCursorKey, {arg:'end'})
 	⚫react(0, keycode.PAGE_UP, ⚫handleCursorKey, {arg:'pageup', role:['multi']})
 	⚫react(0, keycode.PAGE_DOWN, ⚫handleCursorKey, {arg:'pagedown', role:['multi']})
 	⚫react(0, keycode.LEFT, ⚫handleCursorKey, {arg:'left'})
@@ -180,6 +182,7 @@ TEdit.can.draw = ➮(state) {
 		x ⬌ line.s {
 			B = ⚫pal¹
 			⌥ (cmdState↥ > 0) B = cmdStateꕉ.color
+			⎇ B = ⚫pal¹//многострок пока бесполезен, так что пока только одна
 			∇ X = line.wˣ
 			∇ char = line.sˣ, P = line.cˣ
 			⌥ (P ≟ -1) {
@@ -194,13 +197,6 @@ TEdit.can.draw = ➮(state) {
 			) B = ⚫pal⁴, lineHilite = ⦾, selc = ⦿//, F = this.pal[P + 5]
 
 //			if (lineHilite) B = blend(B, 0x1, 0xfff)
-➮ remHere {
-//	var lex = me.text.lexer, rem = lex.lineComment, b = true
-//	for (var i = 0; i < rem.length; i++) { if (rem[i] != line.s[x + i]) { b = false; break } }
-//	if (b) log('*')
-	$ 
-	char ≟ '/' && line.s[x + 1] ≟ '/' && P ≠ me.text.lexer.cstr
-}
 			⌥ (char ≟ '(') { F = ⚫pal[keyw+braceLevel], braceLevel++ }
 			⥹ (char ≟ ')') 
 				{ ⌥ (braceLevel > 0) braceLevel--, F = ⚫pal[keyw+braceLevel] }
@@ -211,13 +207,13 @@ TEdit.can.draw = ➮(state) {
 					F = ⚫pal[keyw+curlyLevel]
 			}
 			⎇ {
-				∇ lex = me.text.lexer, rem = lex.lineComment, brem = ⦿
+				lex ∆ me.text.lexer, rem = lex.lineComment, brem = ⦿
 				i ⬌ rem {
 					⌥ (remⁱ ≠ line.s[x + i]) { brem = ⦾ ⦙ @ }
 				}
-				//if (b) log('*')
-				//if (char == '/' && line.s[x + 1] == '/' && P != me.text.lexer.cstr) 
-				⌥ (brem && ⚫text.lexer.cstr) lineComment = ⦿
+				⌥ (brem && P != me.text.lexer.cstr) {
+					lineComment = ⦿
+				}
 			}
 			⌥ (lineComment) F = ⚫pal⁵
 			⌥ (char ≟ '\t') {
