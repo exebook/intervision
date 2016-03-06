@@ -839,6 +839,7 @@ TEdit.can.tabCompletion = ➮{
 			|| (c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я')
 			|| (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
 			|| c ≟ '.' || c ≟ ';'
+			|| c◬0 > 1000
 		⌥ (ok) t = c + t ⦙ ⎇ @
 		⌥ (c ≟ '.') @
 	}
@@ -846,7 +847,7 @@ TEdit.can.tabCompletion = ➮{
 //	var cfg = require('path').dirname(require.main.filename) 
 //		+ '/tabsnippets.js'
 
-	∇ cfg = expandPath('~/.deodar/tabsnippets.js')
+	cfg ∆ expandPath('~/.deodar/tabsnippets.js')
 	⌥ (fs.existsSync(cfg) ≟ ⦾) $ ⦾
 
 	cfg = ≣(cfg)
