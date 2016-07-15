@@ -1,3 +1,5 @@
+jgirl ∆≣ 'jgirl'
+
 ⌥ (⬤ clipboardSet ≟ '∅') {
 	clipboardData = ''
 	clipboardSet = ➮ (s) { clipboardData = s }
@@ -126,6 +128,7 @@ TEdit.can.size = ➮(w, h) {
 }
 
 ➮ parseDrawCommand s state {
+	// надо чтобы если команда за пределами экрана, то вс равно работало, как работает с выделением.
 	⌥ (s⁰ ≟ '/' && s¹ ≟ '/' && s² ≟ '-' && s³ ≟ '-') {
 		s = s ⌶('//--')¹
 		s = s ⌶ ' '
@@ -140,6 +143,25 @@ TEdit.can.size = ➮(w, h) {
 		⌥ (cmd ≟ 'off') {
 			state ⬈
 		}
+	}
+}
+
+➮ parseDrawLineCommand s {
+	syms ∆ { '-':'─', '==':'═', '##': '\u2588', '%%':'\u2591', '%%%':'\u2592', '%%%%':'\u2593', 'E':'\u2630' }
+	⌥ (s⁰ ≟ '/' && s¹ ≟ '/' && s² ≟ '$' && s³ ≟ ' ') {
+		s = s ⌶('//$ ')¹
+		
+		J ∆ jgirl.from(s, [@title symbol color])
+		❰syms[J.symbol]❱ J.symbol = syms[J.symbol]
+		❰!J.symbol || J.symbol↥ ≟ 0❱ J.symbol = '-'
+		❰J.color && J.color⁰ ≟ '#'❱
+			J.hexcolor = ★('0x'+(J.color ⩪(1)), 16)
+			⏀ J.color
+		◇
+			J.color = ★(J.color)
+			⁋
+		❰!J.color❱ J.color = 5
+		$ J
 	}
 }
 
@@ -164,7 +186,7 @@ TEdit.can.draw = ➮(state) {
 	∇ lineComment = ⦾, keyw = keyw0 = 10//7-ok
 	∇ cmdState = []
 	l ⬌ lines {
-		∇ line = linesˡ
+		line ∆ linesˡ
 		parseDrawCommand(line.s, cmdState)
 		⌥ (match) colorizeMatch(line, match)
 		B = ⚫pal¹
@@ -242,6 +264,14 @@ TEdit.can.draw = ➮(state) {
 			B = blend(B, 0x1, 0xfff)
 			⧗ (∇ X ⊜ ⦙ X < ⚫w ⦙ X++) ⚫set(X, l, ∅, ∅, B)
 		}
+		titleLine = parseDrawLineCommand(line.s, cmdState)
+		❰titleLine && (caret⁰ - ⚫delta ≠ l)❱
+			clr ∆ 0
+			❰titleLine.color❱ clr = ⚫pal[titleLine.color]
+			❰titleLine.hexcolor❱ clr = titleLine.hexcolor
+			⚫rect(0, l, ⚫w, 1, titleLine.symbol, clr, ⚫pal¹)
+			⚫print((⚫w-titleLine.title↥)>>1, l, titleLine.title, clr, B | 0x0000)
+			⁋
 		Y++
 	}
 	⌥ (l < ⚫h) {
@@ -572,7 +602,9 @@ TEdit.can.userPaste = ➮{
 }
 
 TEdit.can.userCut = ➮{
-	clipboardSet(⚫text.getSelText(⚫sel))
+	txt ∆ ⚫text.getSelText(⚫sel)
+	❰txt↥ ≟ 0❱ $ ⦿
+	clipboardSet(txt)
 	⚫deleteSelected()
 	⚫scrollToView()
 	⚫getDesktop().display.caretReset()
@@ -833,15 +865,22 @@ TEdit.can.tabCompletion = ➮{
 	⌥ (!⚫sel.clean()) $
 	∇ a = ⚫para, b = ⚫sym
 	∇ s = ⚫text.getTextOf(a), t = ''
-	⧖ (--b >= 0) {
-		∇ c = sᵇ, 
-			ok = (c >= '0' && c <= '9')
-			|| (c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я')
-			|| (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
-			|| c ≟ '.' || c ≟ ';'
-			|| c◬0 > 1000
-		⌥ (ok) t = c + t ⦙ ⎇ @
-		⌥ (c ≟ '.') @
+	singles ∆ '.;[]()<>`!@#$%^&*_-+={}:"\',/?\\❰❱◇'
+	lastsym ∆ b-1
+	⌥ ((singles ≀ s[lastsym]) >= 0) {
+		t = s[lastsym]
+	}
+	⎇ {
+		⧖ (--b >= 0) {
+			∇ c = sᵇ, 
+				ok = (c >= '0' && c <= '9')
+				|| (c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я')
+				|| (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+				|| c ≟ '.'// || ((singles ≀ c) >= 0)
+//				|| c◬0 > 1000
+			⌥ (ok) t = c + t ⦙ ⎇ @
+			⌥ (c ≟ '.') @
+		}
 	}
 	⌥ (t ≟ '') $
 //	var cfg = require('path').dirname(require.main.filename) 
