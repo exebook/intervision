@@ -28,6 +28,7 @@ TEdit.can.init = ➮{
 	react(100, keycode['z'], commandUndo, {arg:'undo'})
 	react(101, keycode['z'], commandUndo, {arg:'redo'})
 	react(100, keycode['m'], setMatch, { role:['multi']} )
+	react(110, keycode['m'], switchMatchMode, { role:['multi']} )
 	react(100, keycode['c'], userCopy)
 	react(100, keycode['v'], userPaste)
 	react(100, keycode['x'], userCut)
@@ -46,6 +47,18 @@ TEdit.can.init = ➮{
 	react(101, keycode['x'], commandComment, {arg:'uncomment'})
 	react(0, keycode.F3, commandFindNext, { arg:⦿, role:['multi'] })
 	react(1, keycode.F3, commandFindPrev, { role:['multi'] })
+	
+	react(100, keycode['`'], commandScanBookmarks, { arg:1, role:['multi'] })
+	react(100, keycode['1'], commandGotoBookmark, { arg:1, role:['multi'] })
+	react(100, keycode['2'], commandGotoBookmark, { arg:2, role:['multi'] })
+	react(100, keycode['3'], commandGotoBookmark, { arg:3, role:['multi'] })
+	react(100, keycode['4'], commandGotoBookmark, { arg:4, role:['multi'] })
+	react(100, keycode['5'], commandGotoBookmark, { arg:5, role:['multi'] })
+	react(100, keycode['6'], commandGotoBookmark, { arg:6, role:['multi'] })
+	react(100, keycode['7'], commandGotoBookmark, { arg:7, role:['multi'] })
+	react(100, keycode['8'], commandGotoBookmark, { arg:8, role:['multi'] })
+	react(100, keycode['9'], commandGotoBookmark, { arg:9, role:['multi'] })
+	react(100, keycode['0'], commandGotoBookmark, { arg:0, role:['multi'] })
 
 	react(101, keycode.TAB, commandTab, { arg: 'convert', role:['multi'] } )
 	react(0, keycode.TAB, commandTab, { arg: 'indent', role:['multi'] } )
@@ -108,22 +121,38 @@ TEdit.can.setMatch = ➮ {
 	$ ⦿
 }
 
+TEdit.can.switchMatchMode = ➮ {
+	⌥ ⚫whole_word_match == ⦿ {
+		⚫whole_word_match = ⦾
+	}
+	⎇ {
+		⚫whole_word_match = ⦿
+	}
+}
+
 TEdit.can.size = ➮(w, h) {
 	dnaof(⚪, w, h)
 	⚫text.w = w
 	⚫text.h = h
 }
 
-➮ colorizeMatch line match colorIndex {
-	⌥ (match ↥ > 31) $
+➮ colorizeMatch line match colorIndex whole_word_match {
+	⌥ (match ↥ > 64) $
 	∇ s = line.s
 	∇ t = ''
 	∇ i ⊜ ⦙
 	∞ {
 		i = s≀(match, i)
-		⌥ (i < 0) @
+		⌥ i < 0 @
+		⌥ whole_word_match ≟ ⦿ {
+			⌥ (i > 0 && is_alpha_num(s[i - 1])) @
+			⌥ (is_alpha_num(s[i + match ↥])) @
+		}
 		∇ m = match ↥ + i
 		⧗ ( ⦙ i < m ⦙ i++) line.cⁱ = colorIndex
+	}
+	➮ is_alpha_num ch {
+		⌥ (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || ch >= '0' && ch <= '9' || ch == '_') $ ⦿
 	}
 }
 
@@ -147,13 +176,13 @@ TEdit.can.size = ➮(w, h) {
 }
 
 ➮ parseDrawLineCommand s {
-	syms ∆ { '-':'─', '==':'═', '##': '\u2588', '%%':'\u2591', '%%%':'\u2592', '%%%%':'\u2593', 'E':'\u2630' }
+	syms ∆ { '-':'─', '==':'═', '##': '\u2588', '%%':'\u2591', '%%%':'\u2592', '%%%%':'\u2593', 'E':'\u2630', '...':'\u2026' }
 	⌥ (s⁰ ≟ '/' && s¹ ≟ '/' && s² ≟ '$' && s³ ≟ ' ') {
 		s = s ⌶('//$ ')¹
 		
 		J ∆ jgirl.from(s, [@title symbol color])
 		❰syms[J.symbol]❱ J.symbol = syms[J.symbol]
-		❰!J.symbol || J.symbol↥ ≟ 0❱ J.symbol = '-'
+		❰!J.symbol || J.symbol↥ ≟ 0❱ J.symbol = '─'
 		❰J.color && J.color⁰ ≟ '#'❱
 			J.hexcolor = ★('0x'+(J.color ⩪(1)), 16)
 			⏀ J.color
@@ -188,7 +217,7 @@ TEdit.can.draw = ➮(state) {
 	l ⬌ lines {
 		line ∆ linesˡ
 		parseDrawCommand(line.s, cmdState)
-		⌥ (match) colorizeMatch(line, match)
+		⌥ (match) colorizeMatch(line, match, undefined, ⚫whole_word_match)
 		B = ⚫pal¹
 		⌥ (sel) {
 			⌥ (Y < sel.a⁰) selState ⊜
@@ -198,7 +227,7 @@ TEdit.can.draw = ➮(state) {
 				⎇ selState = 5
 		}
 		∇ px ⊜
-		⌥ (match) colorizeMatch(line, match, -1)
+		⌥ (match) colorizeMatch(line, match, -1, ⚫whole_word_match)
 		⌥ (line.first) lineComment = ⦾, keyw = keyw0
 		∇ lineHilite = ⚫curLineHilite && (caret⁰ - ⚫delta ≟ l)
 		x ⬌ line.s {
@@ -839,20 +868,20 @@ TEdit.can.convertSpacesToTab = ➮{
 	∇ a = S.a.y, b = S.b.y
 	⌥ (S.b.x ≟ 0) b--
 	∇ steps = {}
-	⧗ (∇ y = a ⦙ y <= b ⦙ y++) {
-		∇ s = ⚫text.getTextOf(y).replace('\t', '   ')
+	⧗ (y ∆ a ⦙ y <= b ⦙ y++) {
+		s ∆ ⚫text.getTextOf(y).replace('\t', '   ')
 		∇ spaces ⊜
 		i ⬌ s ⌥ (sⁱ ≟ ' ') spaces++ ⦙ ⎇ @
 		steps[spaces] = ⦿
 	}
-	∇ sorted = Object.keys(steps)❄(➮(a,b){$ a-b})
+	sorted ∆ ⚷(steps)❄(➮-{$ a-b})
 	i ⬌ sorted steps[sortedⁱ] = i
 	
 	⚫text.undoBegin()
 	⧗ (∇ y = a ⦙ y <= b ⦙ y++) ⚫text.changeLine(y, ➮(s) {
 		s = s.replace('\t', '   ')
 		∇ spaces ⊜
-		i ⬌ s ⌥ (sⁱ ≟ ' ') spaces++ ⦙ ⎇ @
+		i ⬌ s ⌥ (sⁱ ≟ ' ') spaces++ ⦙ ⎇ ❰sⁱ ≠ '\t'❱ @
 		s = s⩪(spaces, s ↥)
 		⧗ (∇ i ⊜ ⦙ i < steps[spaces] ⦙ i++) s = '\t'+s
 		ロ 'spaces to tabs:', s
@@ -982,7 +1011,7 @@ TEdit.can.commandFindPrev = ➮{
 }
 
 TEdit.can.commandFind = ➮{
-ロ'comand Find'
+	//ロ'comand Find'
 	∇ me = ⚪, query = ''
 	∇ win = TInputBox.create(45, 'Поиск', 'Искомое', ➮(text) {
 		⌥ (handyContext ≟ ∅) handyContext = {}
@@ -1008,22 +1037,23 @@ TEdit.can.commandFind = ➮{
 	$ ⦿
 }
 
-
 TEdit.can.commandFindNext = ➮(next) {
 //TODO: F3 in edit box = enter
-	∇ me = ⚪
+	me ∆ ⚪
 	⌥ (me.textToFind ≟ ∅) $ ⦿
 	⌥ (next && me.replace ≠ ∅) {
-		∇ cur = me.text.getSelText(me.sel)
-		⌥ (cur ≟ me.textToFind) {
+		cur ∆ me.text.getSelText(me.sel)
+		❰cur ≟ me.textToFind❱
 			me.text.deleteText(me.sel)
 			∇ S = me.sel.get()
 			me.sel.clear()
 			me.text.insertTextAt(me.replace, S.a.y, S.a.x)
-		}
+			⁋
 	}
 	∇ c = ⚫text.paraCount(), match, S = me.sel.get()
 	⌥ (S) { me.sym = S.b.x }
+
+	// Собственно поиск:
 	∇ sym = ⚫text.getTextOf(me.para)≀(me.textToFind, me.sym)
 	⌥ (sym >= 0) match = { para:me.para, sym: sym }
 	⌥ (match ≟ ∅) ⧗ (∇ p = me.para + 1 ⦙ p < c ⦙ p++) {
@@ -1044,6 +1074,11 @@ TEdit.can.commandFindNext = ➮(next) {
 		me.para = match.para, me.sym = match.sym
 		me.sel.start(me.para, me.sym)
 		me.sel.end(me.para, me.sym + me.textToFind ↥)
+
+		// Может совершать этот прыжок в другом месте,
+		// чтобы указатель оставался в начале искомого слова.
+		me.sym = match.sym + me.textToFind ↥
+
 		me.scrollToView()
 		⚫getDesktop().display.caretReset()
 	}
@@ -1073,5 +1108,77 @@ TEdit.can.commandReplace = ➮{
 	win.search.setText(query)
 	⌥ (me.replace) win.replace.setText(me.replace)
 	⚫getDesktop().showModal(win)
+	$ ⦿
+}
+// *1*
+
+
+// *2*
+TEdit.can.commandGotoBookmark = ➮(arg) {
+	// это переделка поиска, упрощённая, и вместо scrollToView просто delta = match.para
+	me ∆ ⚪
+	bookmark_text ∆ '// *'+ arg +'*'
+	∇ c = ⚫text.paraCount(), match, S = me.sel.get()
+	⌥ (S) { me.sym = S.b.x }
+
+	⧗ (∇ p = me.para + 1 ⦙ p < c ⦙ p++) {
+		∇ sym = ⚫text.getTextOf(p)≀(bookmark_text)
+		⌥ (sym >= 0) {
+			match = { para:p, sym: sym }
+			@
+		}
+	}
+	⌥ (match ≟ ∅) {
+		⧗ (∇ p ⊜ ⦙ p <= me.para ⦙ p++) {
+			∇ sym = ⚫text.getTextOf(p)≀(bookmark_text)
+			⌥ (sym >= 0) {
+				match = { para:p, sym: sym }
+				@
+			}
+		}
+	}
+	⌥ (match) {
+		me.para = match.para, me.sym = match.sym
+		me.sel.start(me.para, me.sym)
+		me.sel.end(me.para, me.sym + bookmark_text ↥)
+		me.sym = match.sym + bookmark_text ↥
+		me.delta = match.para
+		⚫getDesktop().display.caretReset()
+	}
+	$ ⦿
+}
+
+TEdit.can.commandScanBookmarks = ➮(arg) {
+	➮ try_all {
+		⧗ (i ∆ 0; i <= 9; i++) {
+			bookmark_text = '// *'+ i +'*'
+			sym ∆ a ≀ bookmark_text
+			⌥ sym >= 0 $ { para:p, sym:sym }
+		}
+	}
+	me ∆ ⚪
+	bookmark_text ∆ ''
+	∇ c = ⚫text.paraCount(), match, S = me.sel.get()
+	⌥ (S) { me.sym = S.b.x }
+
+	⧗ (∇ p = me.para + 1 ⦙ p < c ⦙ p++) {
+		match = try_all(⚫text.getTextOf(p))
+		⌥ match @
+	}
+	⌥ (match ≟ ∅) {
+		⧗ (∇ p ⊜ ⦙ p <= me.para ⦙ p++) {
+			match = try_all(⚫text.getTextOf(p))
+			⌥ match @
+		}
+	}
+
+	⌥ (match) {
+		me.para = match.para, me.sym = match.sym
+		me.sel.start(me.para, me.sym)
+		me.sel.end(me.para, me.sym + bookmark_text ↥)
+		me.sym = match.sym + bookmark_text ↥
+		me.delta = match.para
+		⚫getDesktop().display.caretReset()
+	}
 	$ ⦿
 }

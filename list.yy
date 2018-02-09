@@ -231,7 +231,7 @@ TList.can.onCursor = ➮(hand) {
 
 TList.can.selectNone = ➮{
 	⚫selection = []
-	i ⬌ this.items ⏀ ⚫itemsⁱ.selected
+	i ⬌ ⚫items ⏀ ⚫itemsⁱ.selected
 	$ ⦿
 }
 

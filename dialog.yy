@@ -95,7 +95,7 @@ TReplaceBox.can.init = ➮(width, title, msg1, msg2, callback) {
 	⚫search.react(0, keycode.TAB, tab, {arg:⚫replace})
 	⚫replace.react(0, keycode.TAB, tab, {arg:⚫search})
 
-	⚫ok = TButton.create(keycode.ENTER, 'Создать', ➮{ 
+	⚫ok = TButton.create(keycode.ENTER, 'Создать?', ➮{ 
 		me.close() ⦙ 
 		callback(me.search.getText(), me.replace.getText()) ⦙ 
 		$ ⦿

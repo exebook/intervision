@@ -60,16 +60,21 @@ deleteString = ➮(str, from, to) {
 	$ type
 }
 
+➮ charTypeAlphanum ch {
+	R ∆ charType(ch)
+	$ R ≟ 3 ? 0 : R
+}
+
 wordLeft = ➮(s, X) {
-	∇ x = X - 1, type = charType(sˣ)
+	∇ x = X - 1, type = charTypeAlphanum(sˣ)
 	⌥ (x ≟ 0) $ 0
 	x--
 	∞ {
 		⌥ (x <= 0) {
-			⌥ (type ≟ 0 && charType(s⁰) ≠ 0) $ 1
+			⌥ (type ≟ 0 && charTypeAlphanum(s⁰) ≠ 0) $ 1
 			$ 0
 		}
-		∇ t = charType(sˣ)
+		∇ t = charTypeAlphanum(sˣ)
 		⌥ (t ≠ type) {
 			//if (X - x < 4) { type = charType(s[--x]); continue }
 			$ x + 1
@@ -80,11 +85,11 @@ wordLeft = ➮(s, X) {
 }
 
 wordRight = ➮(s, X) {
-	∇ x = X, type = charType(sˣ)
+	∇ x = X, type = charTypeAlphanum(sˣ)
 	x++
 	∞ {
 		⌥ (x >= s ↥) $ s ↥
-		 ∇ t = charType(sˣ)
+		 ∇ t = charTypeAlphanum(sˣ)
 		 ⌥ (t ≠ type) {
 			//if (x - X < 3) { type = charType(s[++x]); continue }
 			$ x
@@ -117,7 +122,7 @@ i ⬌ idChars idCharHash[idCharsⁱ] = ⦿
 		⌥ (sⁱ ≟ '\t') w += tab ⦙ ⎇ w++
 		n++
 	}
-	L ⬊w
+	L ⬊ w
 	$ L
 }
 
@@ -300,7 +305,11 @@ TText.can.insertTextAt = ➮(txt, para, sym) {
 	∇ L = ⚫undoList, continueTyping = ⦾
 	⌥ (txt ↥ ≟ 1 && L ↥ > 0) {
 		∇ U = Lꕉ
-		⌥ (U.action ≟ '=' && U.para ≟ para) continueTyping = ⦿
+		⌥ (U.action ≟ '=' && U.para ≟ para) {
+			⌥ (sym == U.after[1]) {
+				continueTyping = ⦿
+			}
+		}
 		⌥ (⚫flushed) continueTyping = ⦾, ⚫flushed = ⦾
 	}
 	⌥ (!continueTyping) ⚫undoNext()

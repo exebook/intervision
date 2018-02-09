@@ -131,6 +131,38 @@ blend = ➮(color, level, back) { // 0 - full color, 0xf - full back
 //	log(color.toString(16), back.toString(16), R, G, B)
 	$ ⍽((R + (G << 4) + (B << 8)))
 }
+
+loadDriveMenuShortcuts = ➮ loadDriveMenuShortcuts {
+	⌥ (fs.existsSync(expandPath('~/.deodar/driveMenu.js'))) {
+		js ∆ expandPath('~/.deodar/driveMenu.js')
+		try {
+			∇ src = fs.readFileSync(js)≂
+			list = eval(src)
+		}
+		catch (em) {
+			return
+		}
+		L = []
+		m ► list {
+			⌥ typeof m.path != 'string' ♻
+			title ∆ m.title.split('^').join('')
+			path ∆ m.path.split(process.env.HOME).join('~')
+			⌥ path↥ > title↥ {
+				L ⬊ (
+					{
+						title: title,
+						path: path
+					}
+				)
+			}
+		}
+		L ❄ (➮ {
+			$ b.path↥ - a.path↥
+		})
+	}
+	$ L
+}
+
 //console.log(blend(0x433, 0, 0xfff).toString(16))
 //console.log(blend(0x433, 1, 0xfff).toString(16))
 //console.log(blend(0x433, 2, 0xfff).toString(16))

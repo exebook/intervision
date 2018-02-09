@@ -49,7 +49,7 @@ TWindow.can.drawFrame = ➮(state, x, y, w, h) {
 		⌥ (⬤ ⚫title ≟ 'function') title = ⚫title.apply(⚪)
 		⌥ (title ↥ > ⚫w - 6) {
 			⌥ (⚫titleFit) title = ⚫titleFit(title, ⚫w - 6)
-			⎇ title = title⩪(title ↥ - ⚫w - 4, ⚫w - 4)
+			⎇ title = '░'+ title⩪(w - title ↥ + 5)
 		}
 		⌥ (state.active) { F = ⚫pal², B = ⚫pal³ }
 		⚫print((⚫w >> 1) - (title ↥ + 2 >> 1), y, ' '+title+' ', F, B)

@@ -1,20 +1,22 @@
 themeList = [
 //'Green', 'Cyan', 
-'White', 'Black',
-//'Green2', 'Pink1', 'Purple', 'Yellow', 'Blue1', 
+'White', 
+'Black', 
+'NoBlue',
+'Green2', 'Pink1', 'Purple', 'Yellow', 'Blue1', 
 'Atari1', 'Kofe', 'Milk', 'Gray'
 ]
 
 readColorConfig = ➮{
-	∇ cfg = expandPath('~/.deodar/conf.js'), R = 'syntaxWhite'
+	∇ cfg = expandPath('~/.deodar/conf.js'), R = 'syntaxNoBlue'
 	⌥ (fs.existsSync(cfg)) {
-		cfg = fs.readFileSync(cfg)≂
+		cfg = ⛁cfg≂
 		∇ config = eval(cfg)
 		R = config.editTheme
 	}
-	⧗ (∇ i ⊜ ⦙ i < 100 ⦙ i++) {
-		⌥ ('syntax' + themeList⁰ ≟ R) @
-	}
+//	⧗ (∇ i ⊜ ⦙ i < 100 ⦙ i++) {
+//		⌥ ('syntax' + themeList⁰ ≟ R) @
+//	}
 	$ getColor[R]
 }
 
@@ -23,11 +25,26 @@ saveColorConfig = ➮(syntax) {
 	fs.writeFileSync(cfg, ('x={editTheme:"'+syntax+'"}'))
 }
 
+driveMenuReplaces ∆ []
+
+➮ makeNiceTitle t {
+	t = t.split(process.env.HOME).join('~')
+	// тот же код что и в вожатом
+	n ► driveMenuReplaces {
+		⌥ n.path == '/' ♻
+		⌥ (t ≀ (n.path) == 0) {
+			t = t.split(n.path).join('['+n.title+']')
+		}
+	}
+	$ t
+}
+
 TModalTextView = kindof(TWindow)
 TModalTextView.can.init = ➮(Desktop, fileName, viewClass, colors) {
 	dnaof(⚪)
 	∇ colors = readColorConfig()
-	⚫title = fileName
+	driveMenuReplaces = loadDriveMenuShortcuts()
+	⚫title = makeNiceTitle(fileName)
 	⚫scrollBar = TScrollBar.create(colors)
 	⚫add(⚫scrollBar)
 	⚫viewer = viewClass.create(fileName)
@@ -151,7 +168,7 @@ TModalTextView.can.close = ➮{
 		$
 	}
 	//⌥ (⚫viewer.isModified ≠ ∅)
-ロ 'SAVING CURSOR POS'
+	//ロ 'SAVING CURSOR POS'
 	⌥(⚫viewer.savePosState) ⚫viewer.savePosState() // лучше всегда сохранять?
 	dnaof(⚪)
 }
@@ -258,6 +275,9 @@ TFileEdit.can.init = ➮(fileName) {
 	⌥ (⚫fileName≀('.asm') > 0
 		|| ⚫fileName≀('.inc') > 0) ⚫text.lexer = ASMLexer
 	⌥ (⚫fileName≀('.sh') > 0) ⚫text.lexer = ShellLexer
+	⌥ (⚫fileName≀('.py') > 0) ⚫text.lexer = PythonLexer
+	⌥ (⚫fileName≀('.go') > 0) ⚫text.lexer = GoLexer
+	⌥ (⚫fileName≀('.ship') > 0) ⚫text.lexer = ShipLexer
 	∇ N = findFileMem(fileName)
 	⌥ (N) {
 		⚫para = N.para, ⚫sym = N.sym, ⚫delta = N.delta
@@ -266,10 +286,12 @@ TFileEdit.can.init = ➮(fileName) {
 	⚫react(0, keycode.F2, ⚫save)
 	⚫react(100, keycode['s'], ⚫save)
 	⚫react(100, keycode['p'], ⚫reloadPalette)
+	⚫react(101, keycode['p'], ⚫openPaletteDialog)
 	⚫react(101, keycode['t'], ⚫nextTheme)
 
 	// THEY MUST GO TO PARENT (TWindow::TModalTextView)
 
+	⚫react(100, keycode['w'], ⚫openGuide)
 	⚫react(10, keycode.UP, ⚫openGuide)
 	⚫react(10, keycode.DOWN, ⚫openGuide)
 	⚫react(10, keycode.RIGHT, ⚫quickToNextFile, {arg:'right'})
@@ -356,10 +378,9 @@ TFileEdit.can.quickToNextFile = ➮ {
 }
 
 TFileEdit.can.openGuide = ➮ {
-	showGuide(⚪, ⚫fileName)
+	// what was "guide-clean" signal?
 	me ∆ ⚪
-	signal('guide', 'clean')
-	wait('guide', 'select', ➮ {
+	showGuide(⚪, ⚫fileName, ➮ {
 		me.close()
 		⌥ (resortGuideConfig) resortGuideConfig(a)
 		viewer ∆ viewFile(me.getDesktop(), a, TFileEdit)
@@ -388,6 +409,7 @@ TFileEdit.can.save = ➮{
 	}
 	⚫text.modified = ⦾
 	⚫savePosState()
+	room.say('edit save file', ⚫fileName)
 	$ ⦿
 }
 
@@ -396,11 +418,20 @@ TFileEdit.can.isModified = ➮{
 }
 
 TFileEdit.can.nextTheme = ➮{
-	readColorConfig()
-	themeList ⬊(themeList.shift())
-	theme.editor = 'syntax' + themeList⁰
-	⚫reloadPalette()
-	saveColorConfig(theme.editor)
+	∞ {
+		try {
+			readColorConfig()
+			themeList ⬊(themeList.shift())
+			theme.editor = 'syntax' + themeList⁰
+			⚫reloadPalette()
+			saveColorConfig(theme.editor)
+			ロ 'theme syntax' + themeList⁰, 'loaded'
+			@
+		} catch (em) {
+			ロ 'Error: palette(theme) syntax' + themeList⁰, 'not found'
+			♻
+		}
+	}
 	$ ⦿
 }
 
@@ -408,13 +439,21 @@ TFileEdit.can.reloadPalette = ➮{
 	⚫save()
 	≣('./palette')
 	⚫pal = getColor[theme.editor]
-	∇ syntax = ⚫pal
+	syntax ∆ ⚫pal
+	⌥ syntax ≟ ∅ {
+		ロ theme.editor + ' not defined in getColor'
+		$ ⦾
+	}
 	⚫parent.pal = [syntax⁰, syntax¹, syntax², syntax³]
 	⚫parent.scrollBar.pal =
 		[syntax⁰, syntax¹, syntax², syntax³]
 	⚫parent.draw({active:⦿,focused:⦿})
 	⚫repaint()
 	$ ⦿
+}
+
+TFileEdit.can.openPaletteDialog = ➮{
+	showPaletteDialog(⚫getDesktop(), ⚪)
 }
 
 ➮ viewFileContinue yes {
@@ -424,8 +463,26 @@ TFileEdit.can.reloadPalette = ➮{
 	⚫getDesktop().showModal(⚪)
 }
 
+var show_trace_prefix = '/v/deodar/'
+function get_trace(){
+	return new Error().stack
+		.split('\n')
+		.filter(function(s){ return s.indexOf(' at ') == 3})
+		.map(function(s){return s.substr(7)})
+		.filter(function(s){return s.indexOf(show_trace_prefix)>=0})
+		.map(function(s){return s.split(show_trace_prefix).join('')})
+		.slice(1)
+		.join('\n')
+	console.log(e)
+}
+
+var last_time = Date.now()
 viewFile = ➮(Desktop, fileName, viewClass, colors) {
-	∇ t = TModalTextView.create(Desktop, fileName, viewClass, colors)
+	console.log('------------------'+((Date.now()-last_time)/1000)+'-----'+fileName+'----------------')
+	last_time = Date.now()
+	//console.log(get_trace())
+	
+	t ∆ TModalTextView.create(Desktop, fileName, viewClass, colors)
 	t.parent = Desktop
 	try {
 		∇ size = fs.statSync(fileName).size

@@ -25,6 +25,7 @@ TObject.can.init = ➮{
 ≣('./tool')
 ≣('./textview')
 ≣('./hexview')
+≣('./palette-dialog')
 
 handyContext = {
 	lastSearchTerm: ''
